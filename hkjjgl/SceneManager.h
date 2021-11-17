@@ -2,7 +2,7 @@
 #include <vector>
 
 class Scene;
-class Renderer;
+//class Renderer;
 class Window;
 
 class SceneManager {
@@ -10,12 +10,19 @@ public:
 	SceneManager();
 	~SceneManager();
 
-	void addScene(Scene* scene);
+	void AddScene(Scene* scene);
+	void DeleteScene(int sceneNum);
 
-	int startScene(int num);
-	int startScene(Scene scene);
+	virtual int Start(int num);
+
+	bool HasInitialised() const;
+
 protected:
-	std::vector<Scene*> scenes;
+	bool hasScene(int sceneNum);
+
+	bool init;
+
 	Window* w;
-	Renderer* r;
+	//Renderer* r;
+	std::vector<Scene*> scenes;
 };
