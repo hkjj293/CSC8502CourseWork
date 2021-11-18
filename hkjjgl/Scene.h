@@ -1,24 +1,37 @@
 #pragma once
+#include <string>
 
-//class SceneNode;
+class SceneNode;
+class ResourceManager;
+class Camera;
 
 class Scene {
 public:
-	Scene();
+	Scene(std::string name);
 	virtual ~Scene();
 
-	//SceneNode* GetRoot();
+	SceneNode* GetRoot();
+	ResourceManager* GetResourceManager();
+	std::string GetName();
 
-	virtual void Update() {};
+	void SetName(std::string name);
+
+	virtual void Update() = 0;
+	virtual bool Load() = 0;
+	virtual bool Unload() = 0;
 
 	bool HasInitialised() const;
 	bool IsEnd() const;
-	int Next() const;
+	std::string Next() const;
 
 protected:
-	//SceneNode* root;
+	SceneNode* root;
+	ResourceManager* rManager;
+	Camera* mainCamera;
 
-	int nextScene;
+	std::string name;
+
+	std::string nextScene;
 	bool forceQuit;
 	bool init;
 };

@@ -1,7 +1,8 @@
 #include "SceneManager.h"
 #include "Window.h"
-//#include "Renderer.h"
+#include "Renderer.h"
 #include "Scene.h"
+#include "GameTimer.h"
 
 
 SceneManager::SceneManager() {
@@ -12,10 +13,10 @@ SceneManager::SceneManager() {
 		return;
 	}
 
-	//r = new Renderer(*w);
-	//if (!renderer.HasInitialised()) {
-	//	return;
-	//}
+	r = new Renderer(*w);
+	if (!renderer.HasInitialised()) {
+		return;
+	}
 
 	w->LockMouseToWindow(true);
 	w->ShowOSPointer(false);
@@ -24,40 +25,49 @@ SceneManager::SceneManager() {
 }
 
 SceneManager::~SceneManager() {
-	for (auto it = this->scenes.begin(); it != this->scenes.end(); ++it) {
-		delete (*it);
+	for (auto it = scenes.begin(); it != scenes.end(); ++it) {
+		delete it->second;
 	}
 	delete w;
 	//delete r;
 }
 
 void SceneManager::AddScene(Scene* scene) {
-	this->scenes.push_back(scene);
+	scenes[scene->GetName()] = scene;
 }
 
-void SceneManager::DeleteScene(int sceneNum) {
-	if (!hasScene(sceneNum)) return;
-	delete scenes[sceneNum];
-	this->scenes.erase(scenes.begin() + sceneNum);
+void SceneManager::DeleteScene(std::string sceneName) {
+	if (!hasScene(sceneName)) return;
+	delete scenes[sceneName];
+	scenes.erase(sceneName);
 }
 
-int SceneManager::Start(int sceneNum) {
-	if (!hasScene(sceneNum)) return -1;
-	while (w->UpdateWindow() && !scenes[sceneNum]->IsEnd() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
-		scenes[sceneNum]->Update();
-		//r->Render(scenes[sceneNum]->GetRoot());
-		sceneNum = scenes[sceneNum]->Next();
+int SceneManager::Start(std::string sceneName) {
+	if (!hasScene(sceneName)) return -1;
+	if (!scenes[sceneName]->Load()) return -2;
+
+	while (w->UpdateWindow() && !scenes[sceneName]->IsEnd() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
+		scenes[sceneName]->Update();
+		//r->Render(scenes[sceneName]);
+		if (scenes[sceneName]->Next() != sceneName) {
+			if (!hasScene(scenes[sceneName]->Next())) return -1;
+			sceneName = scenes[sceneName]->Next();
+			if(!scenes[sceneName]->Load()) return -2;
+			//r->LoadSceneResources(scenes[sceneName]);
+		}	
 	}
 	return 0;
+}
+
+float SceneManager::GetFrameRate() {
+	return 1 / t->GetTimeDeltaSeconds();
 }
 
 bool SceneManager::HasInitialised() const{
 	return init;
 }
 
-bool SceneManager::hasScene(int sceneNum) {
-	if (sceneNum >= scenes.size() || sceneNum < 0) {
-		return false;
-	}
-	return true;
+bool SceneManager::hasScene(std::string sceneName) {
+	auto it = scenes.find(sceneName);
+	return !(it == scenes.end());
 }
