@@ -7,7 +7,7 @@
 
 class SceneNode {
 public:
-	SceneNode(Mesh* m = NULL, Vector4  colour = Vector4(1, 1, 1, 1));
+	SceneNode(std::string name, Mesh * m = NULL, Vector4  colour = Vector4(1, 1, 1, 1));
 	~SceneNode();
 
 	virtual void Update(float dt);

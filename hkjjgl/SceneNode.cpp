@@ -22,8 +22,14 @@ void SceneNode::AddChild(SceneNode* s) {
 	s->parent = this;
 }
 
-void RemoveChild(std::string name) {
-
+void SceneNode::RemoveChild(std::string name) {
+	for (auto it = children.begin(); it != children.end(); ++it) {
+		if ((*it)->GetName() == name) {
+			delete (*it);
+			children.erase(it);
+			return;
+		}
+	}
 }
 
 

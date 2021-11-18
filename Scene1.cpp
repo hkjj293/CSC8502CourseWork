@@ -1,16 +1,9 @@
 #include "Scene1.h"
 
-#include "hkjjgl/Common.h"
 #include "hkjjgl/SceneNode.h"
-#include "hkjjgl/Shader.h"
+#include "hkjjgl/Renderer.h"
 
-#include "KHR\khrplatform.h"
-#include "glad\glad.h"
-
-#include "GL/GL.h"
-#include "KHR/WGLext.h"
-
-#include "SOIL/SOIL.h"
+#include "CameraNode.h"
 
 Scene1::Scene1(): Scene("scene1") {
 	init = false;
@@ -49,8 +42,8 @@ bool Scene1::Load() {
 	// load FBOs
 	
 	// Construct Initial Scene Graph
-	root->AddChild(new SceneNode(new Mesh("Meshes/CheungChau.obj")));
-	root->AddChild(new SceneNode(mainCamera));
+	root->AddChild(new SceneNode("CheungChau",new Mesh("Meshes/CheungChau.obj")));
+	root->AddChild(new CameraNode(mainCamera));
 	return true;
 }
 
