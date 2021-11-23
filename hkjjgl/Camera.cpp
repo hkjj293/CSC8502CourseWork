@@ -2,7 +2,7 @@
 #include "Window.h"
 #include <algorithm>
 
-void  Camera::UpdateCamera(float dt) {
+void  Camera::Update(float dt) {
 	float  speed = 100.0f * dt;
 	pitch -= (Window::GetMouse()->GetRelativePosition().y)*3.0f;
 	yaw -= (Window::GetMouse()->GetRelativePosition().x)*3.0f;

@@ -14,7 +14,7 @@ SceneManager::SceneManager() {
 	}
 
 	r = new Renderer(*w);
-	if (!renderer.HasInitialised()) {
+	if (!r->HasInitialised()) {
 		return;
 	}
 
@@ -48,10 +48,12 @@ int SceneManager::Start(std::string sceneName) {
 
 	while (w->UpdateWindow() && !scenes[sceneName]->IsEnd() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
 		scenes[sceneName]->Update();
-		//r->Render(scenes[sceneName]);
+		r->Render(scenes[sceneName]);
+
 		if (scenes[sceneName]->Next() != sceneName) {
 			if (!hasScene(scenes[sceneName]->Next())) return -1;
 			sceneName = scenes[sceneName]->Next();
+
 			if(!scenes[sceneName]->Load()) return -2;
 			//r->LoadSceneResources(scenes[sceneName]);
 		}	

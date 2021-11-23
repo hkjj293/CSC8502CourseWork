@@ -16,17 +16,17 @@ Description:Creates and handles the Window, including the initialisation of the 
 #include <functional>
 #include <vector>
 
-//#include "OGLRenderer.h"
+#include "Renderer.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-//#include "GameTimer.h"
+#include "GameTimer.h"
 
 
 
 #define VC_EXTRALEAN
 #define WINDOWCLASS "WindowClass"
 
-//class OGLRenderer;
+class Renderer;
 
 class Window	{
 public:
@@ -35,7 +35,7 @@ public:
 
 	bool	UpdateWindow();	
 
-	//void	SetRenderer(OGLRenderer* r);
+	void	SetRenderer(Renderer* r);
 
 	HWND	GetHandle();
 
@@ -55,7 +55,7 @@ public:
 	static Keyboard*	GetKeyboard()	{return keyboard;}
 	static Mouse*		GetMouse()		{return mouse;}
 
-	//GameTimer*   GetTimer()		{return timer;}
+	GameTimer*   GetTimer()		{return timer;}
 protected:
 	void	CheckMessages(MSG &msg);
 	static LRESULT CALLBACK WindowProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam);
@@ -66,9 +66,9 @@ protected:
 	static Keyboard*	keyboard;
 	static Mouse*		mouse;
 
-	//GameTimer*	timer;
+	GameTimer*	timer;
 	
-	//OGLRenderer*		renderer;
+	Renderer*		renderer;
 
 	bool				forceQuit;
 	bool				init;

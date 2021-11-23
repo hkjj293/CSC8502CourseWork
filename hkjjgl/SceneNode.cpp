@@ -19,7 +19,7 @@ SceneNode::~SceneNode() {
 
 void SceneNode::AddChild(SceneNode* s) {
 	children.push_back(s);
-	s->parent = this;
+	s->SetParent(this);
 }
 
 void SceneNode::RemoveChild(std::string name) {
@@ -32,6 +32,18 @@ void SceneNode::RemoveChild(std::string name) {
 	}
 }
 
+SceneNode* SceneNode::FindChild(std::string name) {
+	for (auto it = children.begin(); it != children.end(); ++it) {
+		if ((*it)->GetName() == name) {
+			return (*it);
+		}
+	}
+	return nullptr;
+}
+
+void SceneNode::SetParent(SceneNode* p) {
+	this->parent = p;
+}
 
 void SceneNode::Update(float dt) {
 	if (parent) {

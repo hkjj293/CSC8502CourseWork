@@ -2,8 +2,8 @@
 
 #include "hkjjgl/SceneNode.h"
 #include "hkjjgl/Renderer.h"
-
-#include "CameraNode.h"
+#include "hkjjgl/Camera.h"
+#include "hkjjgl/ResourceManager.h"
 
 Scene1::Scene1(): Scene("scene1") {
 	init = false;
@@ -20,7 +20,8 @@ Scene1::~Scene1() {
 }
 
 void Scene1::Update() {
-	
+	// Update Scene Nodes (position, rotation, materials, ...
+
 }
 
 bool Scene1::Load() {
@@ -35,15 +36,24 @@ bool Scene1::Load() {
 	rManager->AddTexture("Barren Reds.JPG", earthTex);
 	rManager->AddTexture("Barren RedsDOT3.JPG", earthBump);
 
-	// Load Shaders to RM
-	Shader* bump = new  Shader("bumpvertex.glsl", "bumpfragment.glsl");
+	// Load Shaders to RM? Actually, I want to add Material instead... which include both shader and Textures and also rendering method
+	Shader* bump = new Shader("bumpvertex.glsl", "bumpfragment.glsl");
 	rManager->AddShader("bump", bump);
 
-	// load FBOs
+	// load FBOs to RM 
 	
 	// Construct Initial Scene Graph
-	root->AddChild(new SceneNode("CheungChau",new Mesh("Meshes/CheungChau.obj")));
-	root->AddChild(new CameraNode(mainCamera));
+	//Add Island
+	SceneNode* island = new SceneNode("cheungChau", Mesh::LoadFromMeshFile("Meshes/CheungChau.obj"));
+	root->AddChild(island);
+	//Add Camera
+	root->AddChild(mainCamera);
+	//Add Water plane
+	SceneNode* waterPlane = new SceneNode("waterPlane", Mesh::GenerateQuad());
+	root->AddChild(waterPlane);
+	//Add Light
+	DirLight* directionalLight = new DirLight("directionalLight", Vector3(0, 0, 1), Vector4(1, 1, 1, 1));
+	root->AddChild(directionalLight);
 	return true;
 }
 

@@ -7,7 +7,7 @@ Keyboard* Window::keyboard	= nullptr;
 Mouse* Window::mouse			= nullptr;
 
 Window::Window(std::string title, int sizeX, int sizeY, bool fullScreen)	{
-	//renderer		= NULL;
+	renderer		= NULL;
 	window			= this;
 	forceQuit		= false;
 	init			= false;
@@ -85,7 +85,7 @@ Window::Window(std::string title, int sizeX, int sizeY, bool fullScreen)	{
 		mouse		= new Mouse(windowHandle);
 	}
 
-	//timer		= new GameTimer();
+	timer		= new GameTimer();
 
 	Window::GetMouse()->SetAbsolutePositionBounds((unsigned int)size.x,(unsigned int)size.y);
 
@@ -115,19 +115,19 @@ bool Window::HasInitialised() {
 	return init;
 }
 
-//void	Window::SetRenderer(OGLRenderer* r)	{
-//	renderer = r;
-//	if(r) {
-//		renderer->Resize((int)size.x,(int)size.y);				
-//	}
-//}
+void Window::SetRenderer(Renderer* r)	{
+	renderer = r;
+	if(r) {
+		renderer->Resize((int)size.x,(int)size.y);				
+	}
+}
 
 bool	Window::UpdateWindow() {
 	MSG		msg;
 
-	//timer->Tick();
+	timer->Tick();
 
-	float diff = 0;//timer->GetTimeDeltaSeconds();
+	float diff = timer->GetTimeDeltaSeconds();
 
 	Window::GetMouse()->UpdateDoubleClick(diff);
 
@@ -245,9 +245,9 @@ LRESULT CALLBACK Window::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
 			window->size.x = (float)LOWORD(lParam);
 			window->size.y = (float)HIWORD(lParam);
 
-			//if(window->renderer) {
-			//	window->renderer->Resize(LOWORD(lParam),HIWORD(lParam));				
-			//}
+			if(window->renderer) {
+				window->renderer->Resize(LOWORD(lParam),HIWORD(lParam));				
+			}
 
 			if(window->init) {
 				mouse->SetAbsolutePositionBounds(LOWORD(lParam),HIWORD(lParam));

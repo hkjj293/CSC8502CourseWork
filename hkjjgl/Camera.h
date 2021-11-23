@@ -1,31 +1,32 @@
 #pragma on
 #include "Matrix4.h"
 #include "Vector3.h"
+#include "SceneNode.h"
 
-class Camera {
+class Camera : public SceneNode {
 public:
-	Camera() {
+	Camera(std::string name = "mainCamera") : SceneNode(name) {
+		this->name = name;
 		roll = 0.0f;
 		yaw = 0.0f;
 		pitch = 0.0f;
+		position = Vector3(0, 0, 0);
 		fov = 45.0f;
-		forward = Vector3(0, 0, -1);
-		right = Vector3(1, 0, 0);
 	}
 
-	Camera(float pitch, float yaw, float roll, float fov, Vector3 position) {
+	Camera(std::string name, float pitch, float yaw, float roll, float fov, Vector3 position) : SceneNode() {
+		this->name = name;
 		this->roll = roll;
 		this->yaw = yaw;
 		this->pitch = pitch;
 		this->position = position;
 		this->fov = fov;
-		forward = Vector3(0, 0, -1);
-		right = Vector3(1, 0, 0);
+
 	}
 
 	~Camera() {}
 
-	void UpdateCamera(float dt = 1.0f);
+	virtual void Update(float dt) override;
 
 	Matrix4 BuildViewMatrix();
 
@@ -34,6 +35,4 @@ public:
 	float yaw;
 	float pitch;
 	Vector3 position;
-	Vector3  forward;
-	Vector3  right;
 };

@@ -5,7 +5,7 @@
 #include <chrono>
 
 class Scene;
-//class Renderer;
+class Renderer;
 class Window;
 class GameTimer;
 
@@ -30,6 +30,6 @@ protected:
 
 	GameTimer* t;
 	Window* w;
-	//Renderer* r;
+	Renderer* r;
 	std::map<std::string,Scene*> scenes;
 };

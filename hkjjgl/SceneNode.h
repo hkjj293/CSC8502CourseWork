@@ -5,8 +5,11 @@
 #include "Mesh.h"
 #include <vector>
 
+class Material;
+
 class SceneNode {
 public:
+	SceneNode() {};
 	SceneNode(std::string name, Mesh * m = NULL, Vector4  colour = Vector4(1, 1, 1, 1));
 	~SceneNode();
 
@@ -14,7 +17,10 @@ public:
 
 	void AddChild(SceneNode* s);
 	void RemoveChild(std::string name);
+	SceneNode* FindChild(std::string name);
+	void SetParent(SceneNode* p);
 
+	std::string GetName() { return name; };
 	Vector4 GetColour() { return colour; }
 	Vector3 GetModelScale() { return modelScale; }
 
