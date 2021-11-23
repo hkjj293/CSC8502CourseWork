@@ -1,5 +1,6 @@
 #pragma once
 #include "hkjjgl/Scene.h"
+#include <glad/glad.h>
 
 class Scene1 : public Scene {
 public:
@@ -11,4 +12,5 @@ public:
 	virtual bool Unload() override;
 
 protected:
+	void SetTextureRepeating(GLuint target, bool repeating);
 };

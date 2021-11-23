@@ -3,7 +3,6 @@ uniform  sampler2D  diffuseTex;
 uniform  sampler2D  bumpTex;
 uniform  vec3    cameraPos;
 uniform  vec4    lightColour;
-uniform  vec4    lightColour2;
 uniform  vec3    lightPos;
 uniform  float   lightRadius;
 uniform  int	 isPoint;

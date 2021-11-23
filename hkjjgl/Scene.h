@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "GameTimer.h"
 
 class SceneNode;
 class ResourceManager;
@@ -24,10 +25,13 @@ public:
 	bool IsEnd() const;
 	std::string Next() const;
 
+	GameTimer* GetTimer() { return timer; }
+
 protected:
 	SceneNode* root;
 	ResourceManager* rManager;
 	Camera* mainCamera;
+	GameTimer* timer;
 
 	std::string name;
 

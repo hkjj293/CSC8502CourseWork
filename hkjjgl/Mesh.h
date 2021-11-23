@@ -19,6 +19,12 @@ _-_-_-_-_-_-_-""  ""
 #pragma once
 
 #include "Renderer.h"
+#include "Matrix2.h"
+#include "Vector4.h"
+#include "Vector2.h"
+#include "Matrix4.h"
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 

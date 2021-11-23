@@ -1,5 +1,10 @@
 #include "Renderer.h"
+#include "Camera.h"
+#include "Light.h"
+#include "SceneNode.h"
+#include "ResourceManager.h"
 #include "Scene.h"
+#include <algorithm>
 
 Renderer::Renderer(Window& w) {
 	init = false;
@@ -110,14 +115,63 @@ Renderer::~Renderer() {
 }
 
 void Renderer::Render(Scene* scene) {
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
+	SceneNode* root = scene->GetRoot();
+	ResourceManager* rm = scene->GetResourceManager();
+	SceneNode* island = nullptr;
+	Light* light = nullptr;
+	Camera* mainCam = nullptr;
+	if (root) {
+		mainCam = dynamic_cast<Camera*>(root->FindChild("mainCamera"));
+		island = root->FindChild("cheungChau");
+		light = dynamic_cast<Light*>(root->FindChild("directionalLight"));
+	}
+
+	Matrix4 viewMatrix = Matrix4();
+	Matrix4 modelMatrix = Matrix4();
+	Matrix4 projMatrix = Matrix4();
+	if (mainCam) {
+		viewMatrix = mainCam->BuildViewMatrix();
+		projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, mainCam->fov);
+	}
+	modelMatrix = Matrix4();//root->GetWorldTransform() * Matrix4::Scale(root->GetModelScale());
+	GLuint currShader = rm->GetShader("bump")->GetProgram();
+	glUseProgram(currShader);
+	glUniformMatrix4fv(glGetUniformLocation(currShader, "viewMatrix"), 1, false, viewMatrix.values);
+	glUniformMatrix4fv(glGetUniformLocation(currShader, "modelMatrix"), 1, false, modelMatrix.values);
+	glUniformMatrix4fv(glGetUniformLocation(currShader, "projMatrix"), 1, false, projMatrix.values);
+	if (mainCam) {
+		glUniform3fv(glGetUniformLocation(currShader, "cameraPos"), 1, (float*) & (mainCam->position));
+	}
+	glUniform1i(glGetUniformLocation(currShader, "isPoint"), 0);
+	if (light){
+		glUniform3fv(glGetUniformLocation(currShader, "lightPos"), 1, (float*)& light->GetPosition());
+		glUniform4fv(glGetUniformLocation(currShader, "lightColour"), 1, (float*)& light->GetColour());
+		glUniform1f(glGetUniformLocation(currShader, "lightRadius"), light->GetRadius());
+	}
+	glUniform1i(glGetUniformLocation(currShader, "diffuseTex"), 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, rm->GetTexture("earthTex"));
+
+	glUniform1i(glGetUniformLocation(currShader, "bumpTex"), 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, rm->GetTexture("earthBump"));
+	
+	if (island) {
+		island->Draw();
+	}
 	SwapBuffers();
 }
 
 void Renderer::SwapBuffers() {
-#ifdef _WIN32
+//#ifdef _WIN32
 	::SwapBuffers(deviceContext);
-#endif // _WIN32
+//#endif // _WIN32
 }
 
 void Renderer::Resize(int x, int y) {

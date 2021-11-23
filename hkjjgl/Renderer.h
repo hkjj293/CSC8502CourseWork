@@ -3,6 +3,10 @@
 #include "Shader.h"
 #include "Common.h"
 
+#include <string>
+#include <fstream>
+#include <vector>
+
 #include "KHR\khrplatform.h"
 #include "glad\glad.h"
 
@@ -23,7 +27,7 @@ public:
 
 	bool HasInitialised() { return init; }
 
-	virtual void Render(Scene* scene) {};
+	virtual void Render(Scene* scene);
 	void SwapBuffers();
 
 protected:

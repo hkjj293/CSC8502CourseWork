@@ -1,6 +1,7 @@
 #include "SceneNode.h"
 
 SceneNode::SceneNode(std::string name, Mesh* m, Vector4  colour) {
+	this->name = name;
 	this->mesh = m;
 	this->colour = colour;
 	parent = NULL;
@@ -54,5 +55,11 @@ void SceneNode::Update(float dt) {
 	}
 	for (auto i = children.begin(); i != children.end(); ++i) {
 		(*i)->Update(dt);
+	}
+}
+
+void SceneNode::Draw() {
+	if (mesh) {
+		mesh->Draw();
 	}
 }

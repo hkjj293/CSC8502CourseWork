@@ -1,12 +1,13 @@
 #include "Shader.h"
 #include "Mesh.h"
 #include <iostream>
+#include <vector>
 
 using std::string;
 using std::cout;
 using std::ifstream;
 
-vector<Shader*> Shader::allShaders;
+std::vector<Shader*> Shader::allShaders;
 
 GLuint shaderTypes[SHADER_MAX] = {
 	GL_VERTEX_SHADER,
@@ -61,7 +62,7 @@ void	Shader::Reload(bool deleteOld) {
 }
 
 bool	Shader::LoadShaderFile(const string& filename, string &into)	{
-	ifstream	file(SHADERDIR + filename);
+	ifstream	file("Shaders/" + filename);
 	string		textLine;
 
 	cout << "Loading shader text from " << filename << "\n\n";

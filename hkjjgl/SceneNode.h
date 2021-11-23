@@ -14,6 +14,7 @@ public:
 	~SceneNode();
 
 	virtual void Update(float dt);
+	virtual void Draw();
 
 	void AddChild(SceneNode* s);
 	void RemoveChild(std::string name);

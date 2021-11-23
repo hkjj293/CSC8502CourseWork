@@ -1,5 +1,4 @@
 #include "Mesh.h"
-#include "Matrix2.h"
 
 using std::string;
 
@@ -155,7 +154,7 @@ enum class GeometryChunkTypes {
 	SubMeshNames	= 1 << 15
 };
 
-void ReadTextFloats(std::ifstream& file, vector<Vector2>& element, int numVertices) {
+void ReadTextFloats(std::ifstream& file, std::vector<Vector2>& element, int numVertices) {
 	for (int i = 0; i < numVertices; ++i) {
 		Vector2 temp;
 		file >> temp.x;
@@ -164,7 +163,7 @@ void ReadTextFloats(std::ifstream& file, vector<Vector2>& element, int numVertic
 	}
 }
 
-void ReadTextFloats(std::ifstream& file, vector<Vector3>& element, int numVertices) {
+void ReadTextFloats(std::ifstream& file, std::vector<Vector3>& element, int numVertices) {
 	for (int i = 0; i < numVertices; ++i) {
 		Vector3 temp;
 		file >> temp.x;
@@ -174,7 +173,7 @@ void ReadTextFloats(std::ifstream& file, vector<Vector3>& element, int numVertic
 	}
 }
 
-void ReadTextFloats(std::ifstream& file, vector<Vector4>& element, int numVertices) {
+void ReadTextFloats(std::ifstream& file, std::vector<Vector4>& element, int numVertices) {
 	for (int i = 0; i < numVertices; ++i) {
 		Vector4 temp;
 		file >> temp.x;
@@ -185,7 +184,7 @@ void ReadTextFloats(std::ifstream& file, vector<Vector4>& element, int numVertic
 	}
 }
 
-void ReadTextVertexIndices(std::ifstream& file, vector<int>& element, int numVertices) {
+void ReadTextVertexIndices(std::ifstream& file, std::vector<int>& element, int numVertices) {
 	for (int i = 0; i < numVertices; ++i) {
 		int indices[4];
 		file >> indices[0];
@@ -199,7 +198,7 @@ void ReadTextVertexIndices(std::ifstream& file, vector<int>& element, int numVer
 	}
 }
 
-void ReadIndices(std::ifstream& file, vector<unsigned int>& elements, int numIndices) {
+void ReadIndices(std::ifstream& file, std::vector<unsigned int>& elements, int numIndices) {
 	for (int i = 0; i < numIndices; ++i) {
 		unsigned int temp;
 		file >> temp;
@@ -207,7 +206,7 @@ void ReadIndices(std::ifstream& file, vector<unsigned int>& elements, int numInd
 	}
 }
 
-void ReadJointParents(std::ifstream& file, vector<int>& dest) {
+void ReadJointParents(std::ifstream& file, std::vector<int>& dest) {
 	int jointCount = 0;
 	file >> jointCount;
 
@@ -218,7 +217,7 @@ void ReadJointParents(std::ifstream& file, vector<int>& dest) {
 	}
 }
 
-void ReadJointNames(std::ifstream& file, vector<string>& dest) {
+void ReadJointNames(std::ifstream& file, std::vector<string>& dest) {
 	int jointCount = 0;
 	file >> jointCount;
 	for (int i = 0; i < jointCount; ++i) {
@@ -243,7 +242,7 @@ void ReadRigPose(std::ifstream& file, Matrix4** into) {
 	}
 }
 
-void ReadSubMeshes(std::ifstream& file, int count, vector<Mesh::SubMesh> & subMeshes) {
+void ReadSubMeshes(std::ifstream& file, int count, std::vector<Mesh::SubMesh> & subMeshes) {
 	for (int i = 0; i < count; ++i) {
 		Mesh::SubMesh m;
 		file >> m.start;
@@ -252,7 +251,7 @@ void ReadSubMeshes(std::ifstream& file, int count, vector<Mesh::SubMesh> & subMe
 	}
 }
 
-void ReadSubMeshNames(std::ifstream& file, int count, vector<string>& names) {
+void ReadSubMeshNames(std::ifstream& file, int count, std::vector<string>& names) {
 	std::string scrap;
 	std::getline(file, scrap);
 
@@ -295,15 +294,15 @@ Mesh* Mesh::LoadFromMeshFile(const string& name) {
 	file >> numIndices;
 	file >> numChunks;
 
-	vector<Vector3> readPositions;
-	vector<Vector4> readColours;
-	vector<Vector3> readNormals;
-	vector<Vector4> readTangents;
-	vector<Vector2> readUVs;
-	vector<Vector4> readWeights;
-	vector<int> readWeightIndices;
+	std::vector<Vector3> readPositions;
+	std::vector<Vector4> readColours;
+	std::vector<Vector3> readNormals;
+	std::vector<Vector4> readTangents;
+	std::vector<Vector2> readUVs;
+	std::vector<Vector4> readWeights;
+	std::vector<int> readWeightIndices;
 
-	vector<unsigned int>		readIndices;
+	std::vector<unsigned int>		readIndices;
 
 	for (int i = 0; i < numChunks; ++i) {
 		int chunkType = (int)GeometryChunkTypes::VPositions;

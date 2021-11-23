@@ -5,21 +5,23 @@
 Scene::Scene(std::string name) {
 	init = false;
 	forceQuit = false;
+	this->name = name;
 	nextScene = name;
 	root = nullptr;
+	timer = new GameTimer();
 	// // debug code only!!! Comment it when release or not used
 	//init = true; 
 }
 
 Scene::~Scene() {
-	if(root) 
-		delete root;
+	//if(root) 
+		//delete root;
 
-	if(rManager) 
-		delete rManager;
+	//if(rManager) 
+		//delete rManager;
 
-	if(mainCamera) 
-		delete mainCamera;
+	//if(mainCamera) 
+		//delete mainCamera;
 }
 
 SceneNode* Scene::GetRoot() {

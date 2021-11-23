@@ -15,7 +15,8 @@ _-_-_-_-_-_-_-""  ""
 *//////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "OGLRenderer.h"
+#include "Renderer.h"
+#include <glad\glad.h>
 
 enum ShaderStage {
 	SHADER_VERTEX,

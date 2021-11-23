@@ -3,6 +3,7 @@
 #include "Renderer.h"
 #include "Scene.h"
 #include "GameTimer.h"
+#include <iostream>
 
 
 SceneManager::SceneManager() {
@@ -29,11 +30,12 @@ SceneManager::~SceneManager() {
 		delete it->second;
 	}
 	delete w;
-	//delete r;
+	delete r;
 }
 
 void SceneManager::AddScene(Scene* scene) {
 	scenes[scene->GetName()] = scene;
+	std::cout << scene->GetName() << " " << scenes[scene->GetName()]->GetName() << std::endl;
 }
 
 void SceneManager::DeleteScene(std::string sceneName) {
@@ -70,6 +72,7 @@ bool SceneManager::HasInitialised() const{
 }
 
 bool SceneManager::hasScene(std::string sceneName) {
+
 	auto it = scenes.find(sceneName);
-	return !(it == scenes.end());
+	return it != scenes.end();
 }
