@@ -251,31 +251,22 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 			glUniform1f(glGetUniformLocation(currShader, "grassLine"), 46);
 			glUniform1i(glGetUniformLocation(currShader, "diffuseTex"), 0);
 			glActiveTexture(GL_TEXTURE0);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, 16);
+		
 			glBindTexture(GL_TEXTURE_2D, scene->GetResourceManager()->GetTexture(n->GetTexture()));
 
 			glUniform1i(glGetUniformLocation(currShader, "diffuseTex2"), 2);
 			glActiveTexture(GL_TEXTURE2);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, 16);
+		
 			glBindTexture(GL_TEXTURE_2D, scene->GetResourceManager()->GetTexture("grassTex"));
 
 			glUniform1i(glGetUniformLocation(currShader, "bumpTex"), 1);
 			glActiveTexture(GL_TEXTURE1);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, 16);
+		
 			glBindTexture(GL_TEXTURE_2D, scene->GetResourceManager()->GetTexture("earthBump"));
 
 
 			glUniform1i(glGetUniformLocation(currShader, "bumpTex2"), 3);
 			glActiveTexture(GL_TEXTURE3);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, 16);
 			glBindTexture(GL_TEXTURE_2D, scene->GetResourceManager()->GetTexture("grassBump"));
 		}
 		else {
