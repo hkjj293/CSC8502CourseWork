@@ -6,10 +6,10 @@
 #include <iostream>
 
 
-SceneManager::SceneManager() {
+SceneManager::SceneManager(std::string title, int sizeX, int sizeY, bool fullScreen) {
 	init = false;
 
-	w = new Window("Deferred Rendering!", 1280, 720, false);
+	w = new Window(title, sizeX, sizeY, fullScreen);
 	if (!w->HasInitialised()) {
 		return;
 	}
@@ -22,6 +22,7 @@ SceneManager::SceneManager() {
 	w->LockMouseToWindow(true);
 	w->ShowOSPointer(false);
 
+	t = new GameTimer();
 	init = true;
 }
 
@@ -47,11 +48,16 @@ void SceneManager::DeleteScene(std::string sceneName) {
 int SceneManager::Start(std::string sceneName) {
 	if (!hasScene(sceneName)) return -1;
 	if (!scenes[sceneName]->Load()) return -2;
-
 	while (w->UpdateWindow() && !scenes[sceneName]->IsEnd() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
+		t->Tick();
+		float diff = t->GetTimeDeltaSeconds();
+		if (1.0 / diff < 60) {
+			std::cout << 1.0f / diff << " fps" << std::endl;
+		}
+		//std::cout << 1.0f / diff << " fps" << std::endl;
+
 		scenes[sceneName]->Update();
 		r->Render(scenes[sceneName]);
-
 		if (scenes[sceneName]->Next() != sceneName) {
 			if (!hasScene(scenes[sceneName]->Next())) return -1;
 			sceneName = scenes[sceneName]->Next();

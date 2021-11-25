@@ -62,7 +62,7 @@ void	Shader::Reload(bool deleteOld) {
 }
 
 bool	Shader::LoadShaderFile(const string& filename, string &into)	{
-	ifstream	file("Shaders/" + filename);
+	ifstream	file(SHADERDIR + filename);
 	string		textLine;
 
 	cout << "Loading shader text from " << filename << "\n\n";

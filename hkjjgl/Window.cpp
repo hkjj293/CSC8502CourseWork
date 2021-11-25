@@ -20,8 +20,8 @@ Window::Window(std::string title, int sizeX, int sizeY, bool fullScreen)	{
 
 	size.x = (float)sizeX; size.y = (float)sizeY;
 
-	fullScreen ? position.x = 0.0f : position.x = 100.0f;
-	fullScreen ? position.y = 0.0f : position.y = 100.0f;
+	fullScreen ? position.x = 0.0f : position.x = 0.0f;
+	fullScreen ? position.y = 0.0f : position.y = 0.0f;
 
 	HINSTANCE hInstance = GetModuleHandle( NULL );
 
@@ -51,7 +51,7 @@ Window::Window(std::string title, int sizeX, int sizeY, bool fullScreen)	{
 		dmScreenSettings.dmPelsWidth	= sizeX;				// Selected Screen Width
 		dmScreenSettings.dmPelsHeight	= sizeY;				// Selected Screen Height
 		dmScreenSettings.dmBitsPerPel	= 32;					// Selected Bits Per Pixel
-		dmScreenSettings.dmDisplayFrequency = 60;
+		dmScreenSettings.dmDisplayFrequency = 61;
 		dmScreenSettings.dmFields=DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT|DM_DISPLAYFREQUENCY;
 
 		if(ChangeDisplaySettings(&dmScreenSettings,CDS_FULLSCREEN)!=DISP_CHANGE_SUCCESSFUL)	{

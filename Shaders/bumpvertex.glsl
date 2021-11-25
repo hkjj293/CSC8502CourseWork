@@ -20,7 +20,7 @@ out Vertex {
 } OUT;
 
 void main(void)	{
-	OUT.colour = vec4(1,1,1,1);
+	OUT.colour = colour;
 	OUT.texCoord = texCoord;
 
 	mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));

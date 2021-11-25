@@ -8,20 +8,19 @@ Scene::Scene(std::string name) {
 	this->name = name;
 	nextScene = name;
 	root = nullptr;
+	rManager = nullptr;
 	timer = new GameTimer();
-	// // debug code only!!! Comment it when release or not used
-	//init = true; 
+	init = true; 
 }
 
 Scene::~Scene() {
-	//if(root) 
-		//delete root;
+	if (this->root)
+		delete this->root;
+	root = nullptr;
 
-	//if(rManager) 
-		//delete rManager;
-
-	//if(mainCamera) 
-		//delete mainCamera;
+	if (this->rManager)
+		delete this->rManager;
+	rManager = nullptr;
 }
 
 SceneNode* Scene::GetRoot() {

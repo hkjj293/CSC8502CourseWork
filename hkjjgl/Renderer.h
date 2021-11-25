@@ -15,9 +15,14 @@
 
 #include "SOIL/SOIL.h"
 
+#ifdef _DEBUG
 #define OPENGL_DEBUGGING
+#endif // DEBUG
+
+
 
 class Scene;
+class SceneNode;
 
 class Renderer {
 public:
@@ -35,6 +40,17 @@ protected:
 	bool init;
 	int width;
 	int	height;
+
+	/*********** Will be modified in the future to adapt layers and shader based rendering***********/
+	std::vector <SceneNode*> transparentNodeList;
+	std::vector <SceneNode*> nodeList;
+
+	void BuildNodeLists(Scene* scene);
+	void SortNodeLists();
+	void ClearNodeLists();
+	void DrawNodes(Scene* scene);
+	void DrawNode(SceneNode* n, Scene* scene);
+	/**********************/
 	virtual void Resize(int x, int y);
 
 	void StartDebugGroup(const std::string& s) {

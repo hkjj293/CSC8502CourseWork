@@ -30,7 +30,6 @@ public:
 protected:
 	SceneNode* root;
 	ResourceManager* rManager;
-	Camera* mainCamera;
 	GameTimer* timer;
 
 	std::string name;

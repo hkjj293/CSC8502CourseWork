@@ -3,7 +3,7 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "Mesh.h"
-#include <vector>
+#include <map>
 
 class Material;
 
@@ -19,14 +19,39 @@ public:
 	void AddChild(SceneNode* s);
 	void RemoveChild(std::string name);
 	SceneNode* FindChild(std::string name);
-	void SetParent(SceneNode* p);
+	SceneNode* GetChild(int index);
+	std::map<std::string, SceneNode*>::iterator GetFirstChild();
+	std::map<std::string, SceneNode*>::iterator GetChildrenEnd();
+	int GetChildSize();
 
-	std::string GetName() { return name; };
-	Vector4 GetColour() { return colour; }
-	Vector3 GetModelScale() { return modelScale; }
+	SceneNode* GetParent() { return parent; }
+	void SetParent(SceneNode* p) { this->parent = p; }
 
-	Matrix4 GetWorldTransform() { return worldTransform; }
-	Matrix4 GetLocalTransform() { return transform; }
+	inline Mesh* GetMesh() { return mesh; }
+	void SetMesh(Mesh* m) { this->mesh = m; }
+
+	void SetBoundingRadius(float radius) { this->boundingRadius = radius; }
+	void SetDistanceFromCamera(float distance) { this->distanceFromCamera = distance; }
+	void SetName(std::string name) {  this->name = name; };
+	void SetColour(Vector4 colour) { this->colour = colour; }
+	void SetModelScale(Vector3 scale) { modelScale = scale; }
+
+	void SetLocalTransform(Matrix4 transform) { this->transform = transform; }
+
+	void SetShader(std::string name) { shader = name; }
+	std::string GetShader() { return shader; }
+
+	void SetTexture(std::string name) { texture = name; }
+	std::string GetTexture() { return texture; }
+
+	inline std::string GetName() { return name; };
+	inline Vector4 GetColour() { return colour; }
+	inline Vector3 GetModelScale() { return modelScale; }
+
+	inline Matrix4 GetWorldTransform() { return worldTransform; }
+	inline Matrix4 GetLocalTransform() { return transform; }
+
+	float GetBoundingRadius() { return boundingRadius; }
 
 	static bool CompareByCameraDistance(SceneNode* a, SceneNode* b) {
 		return (a->distanceFromCamera < b->distanceFromCamera) ? true : false;
@@ -44,9 +69,11 @@ protected:
 	Vector3 modelScale;
 	Vector4 colour;
 
-	std::vector<SceneNode*> children;
+	std::map<std::string,SceneNode*> children;
 
 	float boundingRadius;
 	float distanceFromCamera;
-	GLuint texture;
+
+	std::string texture;
+	std::string shader;
 };

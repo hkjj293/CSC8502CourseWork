@@ -12,5 +12,6 @@ public:
 	virtual bool Unload() override;
 
 protected:
+	Camera* mainCamera;
 	void SetTextureRepeating(GLuint target, bool repeating);
 };

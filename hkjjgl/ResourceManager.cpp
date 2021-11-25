@@ -14,12 +14,16 @@ ResourceManager::~ResourceManager() {
 	shaders.clear();
 }
 
-void ResourceManager::AddTexture(std::string name, GLuint texture) {
-	textures.emplace(name, texture);
+void ResourceManager::SetTexture(std::string name, GLuint texture) {
+	textures[name] = texture;
 }
 
-void ResourceManager::AddShader(std::string name, Shader* shader) {
-	shaders.emplace(name, shader);
+void ResourceManager::SetShader(std::string name, Shader* shader) {
+	shaders[name] = shader;
+}
+
+void ResourceManager::SetFloat(std::string name, float num) {
+	floats[name] = num;
 }
 
 void ResourceManager::RemoveTexture(std::string name) {
@@ -36,4 +40,8 @@ GLuint ResourceManager::GetTexture(std::string name) {
 
 Shader* ResourceManager::GetShader(std::string name) {
 	return shaders[name];
+}
+
+float ResourceManager::GetFloat(std::string name) {
+	return floats[name];
 }

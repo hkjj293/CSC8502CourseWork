@@ -19,7 +19,7 @@ HeightMap::HeightMap(const std::string& name, bool negative) {
 	for (int z = 0; z < iHeight; ++z) {
 		for (int x = 0; x < iWidth; ++x) {
 			int offset = (z * iWidth) + x;
-			vertices[offset] = (Vector3(x, data[offset] * (negative ? -1 : 1) + (negative ? 255 : 0) , z) * vertexScale);
+			vertices[offset] = (Vector3(x - (iWidth /2), (data[offset] - 128) * (negative ? -1 : 1), z - (iHeight/2)) * vertexScale);
 			textureCoords[offset] = Vector2(x, z) * textureScale;
 		}
 	}

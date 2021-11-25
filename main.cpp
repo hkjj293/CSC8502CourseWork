@@ -5,11 +5,11 @@
 bool createScenes(SceneManager& sceneManager);
 
 int main() {
-	SceneManager sceneManager;
+	SceneManager sceneManager("Course Work", GetSystemMetrics(SM_CXSCREEN)/2, GetSystemMetrics(SM_CYSCREEN)/2,false);
 	if (!createScenes(sceneManager)) {
 		return -1;
 	}
-	return sceneManager.Start();
+	return sceneManager.Start("scene1");
 }
 
 bool createScenes(SceneManager& sceneManager) {
@@ -18,6 +18,5 @@ bool createScenes(SceneManager& sceneManager) {
 	if (!scene_1->HasInitialised()) 
 		return false;
 	sceneManager.AddScene(scene_1);
-	sceneManager.Start("scene1");
 	return true;
 }

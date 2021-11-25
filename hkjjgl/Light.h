@@ -12,6 +12,12 @@ public:
 		this->radius = radius;
 	}
 	~Light(void) {};
+
+	virtual void Update(float dt) override {
+		SceneNode::Update(dt);
+		position = Vector3(worldTransform.values[12], worldTransform.values[13], worldTransform.values[14]);
+	}
+
 	Vector3 GetPosition()  const { return  position; }
 	void	SetPosition(const  Vector3& val) { position = val; }
 	float	GetRadius() const { return  radius; }
