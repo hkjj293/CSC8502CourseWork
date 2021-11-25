@@ -2,6 +2,8 @@
 #include "Window.h"
 #include "Shader.h"
 #include "Common.h"
+#include "Vector3.h"
+#include "Vector4.h"
 
 #include <string>
 #include <fstream>
@@ -23,6 +25,8 @@
 
 class Scene;
 class SceneNode;
+class Light;
+class GameTimer;
 
 class Renderer {
 public:
@@ -40,10 +44,18 @@ protected:
 	bool init;
 	int width;
 	int	height;
+	GameTimer* t;
 
 	/*********** Will be modified in the future to adapt layers and shader based rendering***********/
 	std::vector <SceneNode*> transparentNodeList;
 	std::vector <SceneNode*> nodeList;
+
+	std::vector <Light*> lightList;
+	std::vector <Vector3> lightPos;
+	std::vector <Vector3> lightDirection;
+	std::vector <Vector4> lightColour;
+	std::vector <float> lightRadius;
+	std::vector <int> lightType;
 
 	void BuildNodeLists(Scene* scene);
 	void SortNodeLists();

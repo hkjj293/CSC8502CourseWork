@@ -3,6 +3,7 @@
 #include <algorithm>
 
 void  Camera::Update(float dt) {
+	SceneNode::Update(dt);
 	time += dt;
 	if (time > 2) time = 0;
 	float  speed =100.0f * dt;
@@ -59,11 +60,11 @@ void  Camera::Update(float dt) {
 	if (Window::GetKeyboard()->KeyDown(KEYBOARD_SPACE)) {
 		position.y += speed;
 	}
-	
+	transform = Matrix4::Translation(position)
 	/*if (!Window::GetKeyboard()->KeyDown(KEYBOARD_SPACE)) {
 		position.y -= speed;
 		if (position.y < 0) position.y = 0;
-	}*/
+	}*/;
 }
 
 Matrix4 Camera::BuildViewMatrix() {		// All operations must be invert
@@ -71,6 +72,12 @@ Matrix4 Camera::BuildViewMatrix() {		// All operations must be invert
 		Matrix4::Rotation(-pitch, Vector3(1, 0, 0)) *
 		Matrix4::Rotation(-yaw, Vector3(0, 1, 0)) *
 		Matrix4::Translation(-position);
+}
+
+Matrix4 Camera::BuildTransformMatrix() {		// All operations must be invert
+	return Matrix4::Rotation(yaw, Vector3(0, 1, 0)) *
+		Matrix4::Rotation(pitch, Vector3(1, 0, 0)) *
+		Matrix4::Rotation(roll, Vector3(0, 0, -1));
 }
 
 Matrix4 Camera::BuildProjMatrix(float width, float height) {		// All operations must be invert

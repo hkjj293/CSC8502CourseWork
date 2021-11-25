@@ -64,6 +64,8 @@ public:
 	static  Mesh* GenerateTriangle();
 	static  Mesh* GenerateQuad();
 
+	void SetType(GLuint type) { this->type = type; }
+
 	unsigned int GetTriCount() const {
 		int primCount = indices ? numIndices : numVertices;
 		return primCount / 3;

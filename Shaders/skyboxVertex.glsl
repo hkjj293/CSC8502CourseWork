@@ -16,6 +16,6 @@ void main(void)	{
 	mat4  invproj = inverse(projMatrix);
 	pos.xy *= vec2(invproj [0][0] , invproj [1][1]);  // Stretch out the from NDC to world Coord (if not inverse, it will do the reverse)
 	pos.z = -1.0f;
-	OUT.viewDir =  (rotation * vec4(transpose(mat3(viewMatrix)) * normalize(pos),1)).xyz;
+	OUT.viewDir =  (vec4(transpose(mat3(viewMatrix)) * normalize(pos),1)).xyz;
 	gl_Position	= worldPos;
 }

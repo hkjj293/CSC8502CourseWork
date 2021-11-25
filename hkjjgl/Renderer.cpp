@@ -5,6 +5,7 @@
 #include "Frustum.h"
 #include "ResourceManager.h"
 #include "Scene.h"
+#include "GameTimer.h"
 #include <algorithm>
 
 Renderer::Renderer(Window& w) {
@@ -108,6 +109,9 @@ Renderer::Renderer(Window& w) {
 	//currentShader = 0;
 
 	w.SetRenderer(this);
+
+	t = new GameTimer();
+
 	init = true;
 }
 
@@ -116,6 +120,7 @@ Renderer::~Renderer() {
 }
 
 void Renderer::Render(Scene* scene) {
+	t->Tick();
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -137,6 +142,13 @@ void Renderer::Render(Scene* scene) {
 
 	//Post process?
 
+
+	// Count frame rate
+	t->Tick();
+	float diff = t->GetTimeDeltaSeconds();
+	std::cout << 1.0f / diff << " fps" << std::endl;
+
+	//swap buffer!
 	SwapBuffers();
 }
 
@@ -157,8 +169,13 @@ void Renderer::BuildNodeLists(Scene* scene) {
 	frameFrustum.FromMatrix(camera->BuildProjMatrix((float)width,(float)height) * camera->BuildViewMatrix());
 
 	while (posList.size() > 0) {
-		//std::cout << currNode->GetName() << std::endl;
-		if (posList[posList.size() - 1] == currNode->GetFirstChild() && frameFrustum.InsideFrustum(*currNode)) {
+		std::cout << currNode->GetName() << std::endl;
+		Light* light = dynamic_cast<Light*>(currNode);
+		if (lightList.size() < 128 && light) {
+		//std::cout << light->GetName() << std::endl;
+			lightList.push_back(light);
+		} 
+		else if (posList[posList.size() - 1] == currNode->GetFirstChild() && frameFrustum.InsideFrustum(*currNode)) {
 			Vector3 dir = currNode->GetWorldTransform().GetPositionVector() - camera->position;
 			if (currNode->GetName() == "skybox") {
 				currNode->SetDistanceFromCamera(-1);
@@ -183,6 +200,18 @@ void Renderer::BuildNodeLists(Scene* scene) {
 			currNode = currNode->GetParent();
 		}
 	}
+	if (lightList.size() > 0) {
+		std::cout << lightList.size() << std::endl;
+		for (int i = 0; i < lightList.size(); i++) {
+			lightPos.push_back(lightList[i]->GetPosition());
+			lightColour.push_back(lightList[i]->GetColour());
+			lightRadius.push_back(lightList[i]->GetRadius());
+			lightDirection.push_back(lightList[i]->GetDirectionn());
+			lightType.push_back(lightList[i]->GetType());
+			
+		}
+	}
+	
 }
 
 void Renderer::SortNodeLists() {
@@ -228,18 +257,25 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 		if (camera) {
 			glUniform3fv(glGetUniformLocation(currShader, "cameraPos"), 1, (float*)&(camera->position));
 		}		
-		glUniform1i(glGetUniformLocation(currShader, "isPoint"), 0);
-		if (light) {
-			Vector3 p = light->GetPosition();
-			Vector4 c = light->GetColour();
-			glUniform3fv(glGetUniformLocation(currShader, "lightPos"), 1, (float*)&p);
-			glUniform4fv(glGetUniformLocation(currShader, "lightColour"), 1, (float*)&c);
-			glUniform1f(glGetUniformLocation(currShader, "lightRadius"), light->GetRadius());
+		glUniform1i(glGetUniformLocation(currShader, "isPoint"), 1);
+		
+		if (lightList.size() > 0) {
+			glUniform3fv(glGetUniformLocation(currShader, "lightPos"), std::min((int)lightList.size(),128) ,(float*)lightPos.data());
+			glUniform3fv(glGetUniformLocation(currShader, "lightDirection"), std::min((int)lightList.size(), 128), (float*)lightDirection.data());
+			glUniform4fv(glGetUniformLocation(currShader, "lightColour"), std::min((int)lightList.size(), 128), (float*)lightColour.data());
+			glUniform1fv(glGetUniformLocation(currShader, "lightRadius"), std::min((int)lightList.size(), 128), (float*)lightRadius.data());
+			glUniform1iv(glGetUniformLocation(currShader, "lightType"), std::min((int)lightList.size(), 128), (int*)lightType.data());
+			glUniform1i(glGetUniformLocation(currShader, "lightnum"), std::min((int)lightList.size(), 128));
+			//std::cout << lightDirection.data()[0] << std::endl;
 		}
-		if (n->GetTexture() == "cubeMap") {
+		if (n->GetName() == "skybox") {
 			glUniform1i(glGetUniformLocation(currShader, "cubeTex"), 0);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->GetResourceManager()->GetTexture(n->GetTexture()));
+
+			glUniform1i(glGetUniformLocation(currShader, "cubeTex2"), 1);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->GetResourceManager()->GetTexture("cubeMap"));
 			glUniform1f(glGetUniformLocation(currShader, "rot"), scene->GetResourceManager()->GetFloat("rotation"));
 			Matrix4 rotation = Matrix4::Rotation(scene->GetResourceManager()->GetFloat("rotation"), Vector3(0, 0 ,1));
 			glUniformMatrix4fv(glGetUniformLocation(currShader, "rotation"), 1, false, rotation.values);
@@ -248,6 +284,7 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 		else if(n->GetName() == "cheungChau") {
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
+			glUniform1f(glGetUniformLocation(currShader, "rot"), scene->GetResourceManager()->GetFloat("rotation"));
 			glUniform1f(glGetUniformLocation(currShader, "grassLine"), 46);
 			glUniform1i(glGetUniformLocation(currShader, "diffuseTex"), 0);
 			glActiveTexture(GL_TEXTURE0);
@@ -269,7 +306,7 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D, scene->GetResourceManager()->GetTexture("grassBump"));
 		}
-		else {
+		else {			
 			glUniform1f(glGetUniformLocation(currShader, "rot"), scene->GetResourceManager()->GetFloat("rotation"));
 
 			Matrix4 rotation = Matrix4::Rotation(scene->GetResourceManager()->GetFloat("rotation"), Vector3(0, 0, 1));
@@ -277,14 +314,18 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 
 			glUniform1f(glGetUniformLocation(currShader, "ratio"), 0.3);
 
-			glUniform1i(glGetUniformLocation(currShader, "cubeTex"), 0);
+			glUniform1i(glGetUniformLocation(currShader, "cubeTex2"), 0);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->GetResourceManager()->GetTexture("cubeMap"));
+
+			glUniform1i(glGetUniformLocation(currShader, "cubeTex"), 2);
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->GetResourceManager()->GetTexture("cubeMap2"));
 
 			glUniform1i(glGetUniformLocation(currShader, "diffuseTex"), 1);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, scene->GetResourceManager()->GetTexture(n->GetTexture()));
-
+			
 		}
 		n->Draw();
 	}
@@ -293,6 +334,12 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 void Renderer::ClearNodeLists() {
 	transparentNodeList.clear();
 	nodeList.clear();
+	lightList.clear();
+	lightPos.clear();
+	lightColour.clear();
+	lightRadius.clear();
+	lightDirection.clear();
+	lightType.clear();
 }
 
 void Renderer::Resize(int x, int y) {

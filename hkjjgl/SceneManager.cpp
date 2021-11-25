@@ -51,10 +51,7 @@ int SceneManager::Start(std::string sceneName) {
 	while (w->UpdateWindow() && !scenes[sceneName]->IsEnd() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
 		t->Tick();
 		float diff = t->GetTimeDeltaSeconds();
-		if (1.0 / diff < 60) {
-			std::cout << 1.0f / diff << " fps ===================================================" << std::endl;
-		}
-		std::cout << 1.0f / diff << " fps" << std::endl;
+		//std::cout << 1.0f / diff << " fps" << std::endl;
 
 		scenes[sceneName]->Update();
 		r->Render(scenes[sceneName]);

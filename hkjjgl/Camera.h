@@ -28,6 +28,7 @@ public:
 	virtual void Update(float dt) override;
 
 	Matrix4 BuildViewMatrix();
+	Matrix4 BuildTransformMatrix();
 	Matrix4 BuildProjMatrix(float width, float height);
 
 	float fov;
