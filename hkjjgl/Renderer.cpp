@@ -281,7 +281,7 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 		else {
 			glUniform1f(glGetUniformLocation(currShader, "rot"), scene->GetResourceManager()->GetFloat("rotation"));
 
-			Matrix4 rotation = Matrix4::Rotation(scene->GetResourceManager()->GetFloat("rotation")/10.0f, Vector3(0, 0, 1));
+			Matrix4 rotation = Matrix4::Rotation(scene->GetResourceManager()->GetFloat("rotation"), Vector3(0, 0, 1));
 			glUniformMatrix4fv(glGetUniformLocation(currShader, "textureMatrix"), 1, false, rotation.values);
 
 			glUniform1f(glGetUniformLocation(currShader, "ratio"), 0.3);
