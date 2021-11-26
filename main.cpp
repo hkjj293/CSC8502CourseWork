@@ -5,7 +5,7 @@
 bool createScenes(SceneManager& sceneManager);
 
 int main() {
-	SceneManager sceneManager("Course Work", GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),false);
+	SceneManager sceneManager("Course Work", 1920,1080 ,true);
 	if (!createScenes(sceneManager)) {
 		return -1;
 	}

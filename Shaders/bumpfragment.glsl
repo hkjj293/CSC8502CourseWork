@@ -37,12 +37,13 @@ void  main(void)    {
 	vec4 temp = vec4(0,0,0,0);
 
 	for(int i = 0 ; i < lightnum ; i++){
-		vec3  incident   = lightType[i] == 1 ? normalize(-lightDirection[i]) : normalize(lightPos[i] - IN.worldPos) ;
+		vec3 norDir  = normalize(lightDirection[i]);
+		vec3  incident   = lightType[i] == 1 ? -norDir : normalize(lightPos[i] - IN.worldPos) ;
 		vec3  halfDir    = normalize(incident + viewDir );
 		float  lambert      = max(dot(incident , bumpNormal), 0.0f);
 		float  dis    = length(lightPos[i]  - IN.worldPos );
 
-		float  invDistRatio = lightType[i] == 1 ? (lightColour[i].w / 30000.0f) : (lightType[i] == 0 ? lightRadius[i] / (33*dis) : (lightType[i] == 2 ? IN.colour.w  * 33 /(lightRadius[i]* sqrt(dis)) : IN.colour.w * 33 /(dis)));
+		float  invDistRatio = lightType[i] == 1 ? (lightColour[i].w / 30000.0f) : (lightType[i] == 0 ? lightRadius[i] / (33*dis) : (lightType[i] == 2 ? IN.colour.w  * 33 /(lightRadius[i]* sqrt(dis)) : IN.colour.w / (3*sqrt(dis))));
 		float  attenuation  =  lightColour[i].w * invDistRatio * invDistRatio;  // 1.0 - clamp(distance / lightRadius , 0.0,  1.0);
 
 		float  specFactor   = clamp(dot(halfDir , bumpNormal) ,0.0 ,1.0);
@@ -50,12 +51,12 @@ void  main(void)    {
 
 		float intensity = attenuation;
 		if(lightType[i] == 2){
-			float n = dot(normalize(lightDirection[i]),normalize(IN.worldPos - lightPos[i]));
+			float n = dot(norDir,normalize(IN.worldPos - lightPos[i]));
 			intensity = n > cos(lightRadius[i]/360) ? 1 : 0;
 		}
 		else if(lightType[i] == 3){
-			float n = dot(normalize(lightDirection[i]),normalize(IN.worldPos - lightPos[i] ));
-			intensity = n > cos(lightRadius[i]) ? n : 0;
+			float n = length((IN.worldPos - lightPos[i]) - dot(norDir,IN.worldPos - lightPos[i]) * norDir);
+			intensity = n < lightRadius[i] ? 1 : 0;
 		}
 
 		vec3  surface = (diffuse.rgb * lightColour[i].rgb);
