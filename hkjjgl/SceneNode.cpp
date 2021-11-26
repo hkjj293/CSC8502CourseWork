@@ -11,6 +11,7 @@ SceneNode::SceneNode(std::string name, Mesh* m, Vector4  colour) {
 	distanceFromCamera = 0.0f;
 	texture = "";
 	shader = "";
+	enable = true;
 }
 
 SceneNode::~SceneNode() {

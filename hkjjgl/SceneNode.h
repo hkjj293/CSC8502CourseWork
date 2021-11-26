@@ -27,6 +27,9 @@ public:
 	SceneNode* GetParent() { return parent; }
 	void SetParent(SceneNode* p) { this->parent = p; }
 
+	void SetEnable(bool enable) { this->enable = enable; };
+	bool IsEnable() { return enable; };
+
 	inline Mesh* GetMesh() { return mesh; }
 	void SetMesh(Mesh* m) { this->mesh = m; }
 
@@ -44,14 +47,15 @@ public:
 	void SetTexture(std::string name) { texture = name; }
 	std::string GetTexture() { return texture; }
 
-	inline std::string GetName() { return name; };
-	inline Vector4 GetColour() { return colour; }
-	inline Vector3 GetModelScale() { return modelScale; }
+	std::string GetName() { return name; };
+	Vector4 GetColour() { return colour; }
+	Vector3 GetModelScale() { return modelScale; }
 
-	inline Matrix4 GetWorldTransform() { return worldTransform; }
-	inline Matrix4 GetLocalTransform() { return transform; }
+	Matrix4 GetWorldTransform() { return worldTransform; }
+	Matrix4 GetLocalTransform() { return transform; }
 
 	float GetBoundingRadius() { return boundingRadius; }
+	float GetDistanceFromCamera() { return this->distanceFromCamera; }
 
 	static bool CompareByCameraDistance(SceneNode* a, SceneNode* b) {
 		return (a->distanceFromCamera < b->distanceFromCamera) ? true : false;
@@ -59,6 +63,7 @@ public:
 
 protected:
 	std::string name;
+	bool enable;
 
 	SceneNode* parent;
 	Mesh* mesh;

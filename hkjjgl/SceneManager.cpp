@@ -19,8 +19,8 @@ SceneManager::SceneManager(std::string title, int sizeX, int sizeY, bool fullScr
 		return;
 	}
 
-	w->LockMouseToWindow(true);
-	w->ShowOSPointer(false);
+	//w->LockMouseToWindow(true);
+	//w->ShowOSPointer(false);
 
 	t = new GameTimer();
 	init = true;

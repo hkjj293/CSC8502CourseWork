@@ -461,10 +461,10 @@ Mesh* Mesh::GenerateQuad() {
 	m->colours[3] = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	m->textureCoords = new  Vector2[m->numVertices];
-	m->textureCoords[0] = Vector2(0.0f, 50.0f);
+	m->textureCoords[0] = Vector2(0.0f, 1.0f);
 	m->textureCoords[1] = Vector2(0.0f, 0.0f);
-	m->textureCoords[2] = Vector2(50.0f, 50.0f);
-	m->textureCoords[3] = Vector2(50.0f, 0.0f);
+	m->textureCoords[2] = Vector2(1.0f, 1.0f);
+	m->textureCoords[3] = Vector2(1.0f, 0.0f);
 
 	m->normals = new  Vector3[m->numVertices];//Init  new  var!
 	m->tangents = new  Vector4[m->numVertices ];//Init  new  var!

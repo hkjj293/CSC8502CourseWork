@@ -49,6 +49,7 @@ protected:
 	/*********** Will be modified in the future to adapt layers and shader based rendering***********/
 	std::vector <SceneNode*> transparentNodeList;
 	std::vector <SceneNode*> nodeList;
+	std::vector <SceneNode*> postNodeList;
 
 	std::vector <Light*> lightList;
 	std::vector <Vector3> lightPos;

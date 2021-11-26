@@ -120,13 +120,11 @@ Renderer::~Renderer() {
 }
 
 void Renderer::Render(Scene* scene) {
-	t->Tick();
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
-	
 	// Repackage of render sequence
 	// Get root & resource mangager
 	SceneNode* root = scene->GetRoot();
@@ -169,9 +167,12 @@ void Renderer::BuildNodeLists(Scene* scene) {
 	frameFrustum.FromMatrix(camera->BuildProjMatrix((float)width,(float)height) * camera->BuildViewMatrix());
 
 	while (posList.size() > 0) {
-		std::cout << currNode->GetName() << std::endl;
+		//std::cout << currNode->GetName() << std::endl;
 		Light* light = dynamic_cast<Light*>(currNode);
-		if (lightList.size() < 128 && light) {
+		if (!currNode->IsEnable()) {
+			std::cout << currNode->GetName() << " Skipped" << std::endl;
+		}
+		else if (lightList.size() < 128 && light) {
 		//std::cout << light->GetName() << std::endl;
 			lightList.push_back(light);
 		} 
@@ -181,15 +182,21 @@ void Renderer::BuildNodeLists(Scene* scene) {
 				currNode->SetDistanceFromCamera(-1);
 			}
 			else {
-				currNode->SetDistanceFromCamera(Vector3::Dot(dir, dir));
+				float a = dir.Length();
+				currNode->SetDistanceFromCamera(dir.Length());
 			}
-			if (currNode->GetColour().w < 1.0f) {
+
+			if (currNode->GetName() == "miniMap") {
+				postNodeList.push_back(currNode);
+			}
+			else if (currNode->GetColour().w < 1.0f) {
 				transparentNodeList.push_back(currNode);
 			}
 			else {
 				nodeList.push_back(currNode);
 			}
 		}
+
 		if (posList[posList.size() - 1] != currNode->GetChildrenEnd()) {
 			currNode = (*posList[posList.size() - 1]).second;
 			posList[posList.size() - 1]++;
@@ -217,6 +224,9 @@ void Renderer::BuildNodeLists(Scene* scene) {
 void Renderer::SortNodeLists() {
 	std::sort(transparentNodeList.rbegin(), transparentNodeList.rend(), SceneNode::CompareByCameraDistance);
 	std::sort(nodeList.begin(), nodeList.end(), SceneNode::CompareByCameraDistance);
+	/*for (const auto& i : nodeList) {
+		std::cout << (*i).GetName() << " "  << (*i).GetDistanceFromCamera() << std::endl;
+	}*/
 }
 
 void Renderer::DrawNodes(Scene* scene) {
@@ -229,6 +239,10 @@ void Renderer::DrawNodes(Scene* scene) {
 		DrawNode(i, scene);
 	}
 	glDisable(GL_BLEND);
+	for (const auto& i : postNodeList) {
+		DrawNode(i, scene);
+	}
+
 }
 
 void Renderer::DrawNode(SceneNode* n,Scene* scene) {
@@ -257,7 +271,6 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 		if (camera) {
 			glUniform3fv(glGetUniformLocation(currShader, "cameraPos"), 1, (float*)&(camera->position));
 		}		
-		glUniform1i(glGetUniformLocation(currShader, "isPoint"), 1);
 		
 		if (lightList.size() > 0) {
 			glUniform3fv(glGetUniformLocation(currShader, "lightPos"), std::min((int)lightList.size(),128) ,(float*)lightPos.data());
@@ -268,7 +281,8 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 			glUniform1i(glGetUniformLocation(currShader, "lightnum"), std::min((int)lightList.size(), 128));
 			//std::cout << lightDirection.data()[0] << std::endl;
 		}
-		if (n->GetName() == "skybox") {
+		if (n->GetName() == "skybox") 
+		{
 			glUniform1i(glGetUniformLocation(currShader, "cubeTex"), 0);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->GetResourceManager()->GetTexture(n->GetTexture()));
@@ -280,6 +294,16 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 			Matrix4 rotation = Matrix4::Rotation(scene->GetResourceManager()->GetFloat("rotation"), Vector3(0, 0 ,1));
 			glUniformMatrix4fv(glGetUniformLocation(currShader, "rotation"), 1, false, rotation.values);
 			glDisable(GL_DEPTH_TEST);
+		}
+		else if (n->GetName() == "miniMap") {
+			glUniform1i(glGetUniformLocation(currShader, "cubeTex"), 0);
+			glUniform1i(glGetUniformLocation(currShader, "cubeTex2"), 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->GetResourceManager()->GetTexture(n->GetTexture()));
+
+			glUniform1f(glGetUniformLocation(currShader, "rot"), 0);
+			Matrix4 rotation = Matrix4();
+			glUniformMatrix4fv(glGetUniformLocation(currShader, "rotation"), 1, false, rotation.values);
 		}
 		else if(n->GetName() == "cheungChau") {
 			glEnable(GL_CULL_FACE);
@@ -334,6 +358,7 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 void Renderer::ClearNodeLists() {
 	transparentNodeList.clear();
 	nodeList.clear();
+	postNodeList.clear();
 	lightList.clear();
 	lightPos.clear();
 	lightColour.clear();

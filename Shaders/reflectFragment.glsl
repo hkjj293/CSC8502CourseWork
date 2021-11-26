@@ -46,6 +46,6 @@ void  main(void)    {
 		}
 		temp = temp / lightnum;
 		fragColour += temp;
-		fragColour.a = 1 - clamp(dot(viewDir,vec3(0,1,0))/2,0.0,1.0);
 		fragColour = fragColour  *1.5;
+		fragColour.a = 1 - (abs(dot(viewDir,vec3(0,1,0))-0.5)/2);
 }
