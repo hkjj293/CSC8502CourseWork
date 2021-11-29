@@ -165,6 +165,10 @@ bool Mouse::ButtonDown(MouseButtons b)	{
 	return buttons[b];
 }
 
+bool Mouse::ButtonTriggered(MouseButtons b) {
+	return (buttons[b] && !holdButtons[b]);
+}
+
 /*
 Returns if the button is down, and has been held down for multiple updates. 
 Doesn't need bounds checking - an INPUT_KEYS enum is always in range

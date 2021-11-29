@@ -9,6 +9,7 @@
 
 Scene1::Scene1(): Scene("scene1") {
 	mainCamera = nullptr;
+	lightCount = 0;
 }
 
 Scene1::~Scene1() {
@@ -16,11 +17,13 @@ Scene1::~Scene1() {
 }
 
 void Scene1::Update() {
+	if (Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
+		forceQuit = true;
+	}
 	// Update Scene Nodes (position, rotation, materials, ...
 	timer->Tick();
 	float diff = timer->GetTimeDeltaSeconds();
 	//std::cout << 1.0f / diff << " fps" << std::endl;
-
 	if (!root->FindChild("mainCamera")) mainCamera == nullptr;
 	if(mainCamera) mainCamera->Update(diff);
 	rManager->SetFloat("rotation", rManager->GetFloat("rotation") + (20 * diff));
@@ -30,23 +33,22 @@ void Scene1::Update() {
 	root->FindChild("lightGimbal")->SetLocalTransform(Matrix4::Rotation(-rManager->GetFloat("rotation") , Vector3(0, 0, 1)));
 	dynamic_cast<Light*>(root->FindChild("lightGimbal")->FindChild("directionalLight"))->SetDirection(Matrix4::Rotation(-rManager->GetFloat("rotation"), Vector3(0, 0, 1))* Vector3(1, 0, 0));
 
-	Light* camLight = dynamic_cast<Light*>(root->FindChild("mainCamera")->FindChild("camLight"));
-
-	camLight->SetDirection((mainCamera->BuildTransformMatrix() * Vector4(0,0,-1,1)).ToVector3());
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_L)) {
-		camLight->SetEnable(!camLight->IsEnable());
-	}
-	if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_C)) {
-		camLight->SetType((camLight->GetType() + 1)%4);
-	}
-	if (Window::GetKeyboard()->KeyDown(KEYBOARD_UP)) {
-		camLight->SetColour(Vector4(camLight->GetColour().x, camLight->GetColour().y, camLight->GetColour().z, camLight->GetColour().w + (1000 * diff)));
-	}
-	if (Window::GetKeyboard()->KeyDown(KEYBOARD_DOWN)) {
-		camLight->SetColour(Vector4(camLight->GetColour().x, camLight->GetColour().y, camLight->GetColour().z, camLight->GetColour().w - (1000 * diff)));
-	}
-
 	if (mainCamera) {
+		Light* camLight = dynamic_cast<Light*>(root->FindChild("mainCamera")->FindChild("camLight"));
+
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_L)) {
+			camLight->SetEnable(!camLight->IsEnable());
+		}
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_C)) {
+			camLight->SetType((camLight->GetType() + 1) % 4);
+		}
+		if (Window::GetKeyboard()->KeyDown(KEYBOARD_UP)) {
+			camLight->SetColour(Vector4(camLight->GetColour().x, camLight->GetColour().y, camLight->GetColour().z, camLight->GetColour().w + (1000 * diff)));
+		}
+		if (Window::GetKeyboard()->KeyDown(KEYBOARD_DOWN)) {
+			camLight->SetColour(Vector4(camLight->GetColour().x, camLight->GetColour().y, camLight->GetColour().z, camLight->GetColour().w - (1000 * diff)));
+		}
+
 		float  speed = 100.0f * diff;
 		mainCamera->pitch -= (Window::GetMouse()->GetRelativePosition().y) * 3.0f;
 		mainCamera->yaw -= (Window::GetMouse()->GetRelativePosition().x) * 3.0f;
@@ -75,11 +77,8 @@ void Scene1::Update() {
 			mainCamera->roll -= 360.0f;
 		}
 
-		Matrix4  rotation = Matrix4::Rotation(mainCamera->yaw, Vector3(0, 1, 0)) *
-			Matrix4::Rotation(mainCamera->pitch, Vector3(1, 0, 0)) *
-			Matrix4::Rotation(mainCamera->roll, Vector3(0, 0, -1));
-		Vector3  forward = rotation * Vector3(0, 0, -1);
-		Vector3  right = rotation * Vector3(1, 0, 0);
+		Vector3  forward = mainCamera->BuildRotationMatrix() * Vector3(0, 0, -1);
+		Vector3  right = mainCamera->BuildRotationMatrix() * Vector3(1, 0, 0);
 
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_W)) {
 			mainCamera->position += forward * speed;
@@ -101,12 +100,32 @@ void Scene1::Update() {
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_SPACE)) {
 			mainCamera->position.y += speed;
 		}
-	}
+		mainCamera->SetLocalTransform(mainCamera->BuildTransformMatrix());
+		root->FindChild("miniMapCamera")->SetLocalTransform(Matrix4::Translation(Vector3(mainCamera->position.x, 1000, mainCamera->position.z)));
+		dynamic_cast<Camera*>(root->FindChild("miniMapCamera"))->yaw = mainCamera->yaw;
+		//root->FindChild("waterPlane")->SetLocalTransform(Matrix4::Translation(Vector3(mainCamera->position.x,0, mainCamera->position.z)));
 
+		camLight->SetDirection((mainCamera->BuildRotationMatrix() * Vector4(0, 0, -1, 1)).ToVector3());
+	}
+	if (Window::GetMouse()->ButtonTriggered(MOUSE_LEFT)) {
+		lightCount++;
+		root->AddChild(new Light("Mouse"+std::to_string(lightCount), 3, Vector3(0, 0, 0.0f), Vector3(0, 1, 0), Vector4(1, 0.01 * (rand() % 100), 0.3, 1000), 10));
+		root->FindChild("Mouse" + std::to_string(lightCount))->SetLocalTransform(mainCamera->BuildTransformMatrix());
+		dynamic_cast<Light*>(root->FindChild("Mouse" + std::to_string(lightCount)))->SetDirection((mainCamera->BuildRotationMatrix() * Vector4(0, 0, -1, 1)).ToVector3());
+	}
+	if (Window::GetMouse()->ButtonTriggered(MOUSE_RIGHT)) {
+		if (lightCount > 0) {
+			root->RemoveChild("Mouse" + std::to_string(lightCount));
+			lightCount--;
+		}
+	}
 	root->Update(diff);
 }
 
 bool Scene1::Load() {
+	// Init common var
+	int width = std::min(GetSystemMetrics(SM_CXSCREEN), 1920);
+	int height = std::min(GetSystemMetrics(SM_CYSCREEN), 1080);
 	// Init members
 	root = new SceneNode("root");
 
@@ -133,11 +152,16 @@ bool Scene1::Load() {
 	}
 
 	SetTextureRepeating(waterTex, true);
+	//SetTextureFilter(waterTex);
 	SetTextureRepeating(earthTex, true);
+	SetTextureFilter(earthTex);
 	SetTextureRepeating(earthBump, true);
+	SetTextureFilter(earthBump);
 	SetTextureRepeating(grassTex, true);
+	SetTextureFilter(grassTex);
 	SetTextureRepeating(grassBump, true);
-	
+	SetTextureFilter(grassBump);
+
 	rManager->SetTexture("waterTex", waterTex);
 	rManager->SetTexture("earthTex", earthTex);
 	rManager->SetTexture("earthBump", earthBump);
@@ -146,12 +170,15 @@ bool Scene1::Load() {
 	rManager->SetTexture("cubeMap", cubeMap);
 	rManager->SetTexture("cubeMap2", cubeMap2);
 
+	
+
 	// Load Shaders to RM? Actually, I want to add Material instead... which include both shader and Textures and also rendering method
 	Shader* bump = new Shader("bumpvertex.glsl", "bumpfragment.glsl");
 	Shader* skybox = new Shader("skyboxVertex.glsl", "skyboxFragment.glsl");
 	Shader* reflect = new Shader("reflectVertex.glsl", "reflectFragment.glsl");
 	Shader* tess = new Shader("tessVert.glsl", "displaceFrag.glsl", "", "displaceTCS.glsl", "displaceTES.glsl");
 	Shader* processShader = new  Shader("textureShader.glsl", "processfrag.glsl");
+	Shader* tex = new Shader("textureShader.glsl", "texturedFragment.glsl");
 	if (!skybox->LoadSuccess() || !bump->LoadSuccess() || !reflect->LoadSuccess() || !tess->LoadSuccess() || !processShader->LoadSuccess()) {
 		return false;
 	}
@@ -160,20 +187,48 @@ bool Scene1::Load() {
 	rManager->SetShader("reflect", reflect);
 	rManager->SetShader("tess", tess);
 	rManager->SetShader("proc", processShader);
+	rManager->SetShader("tex", tex);
 
 	// Set Global variables across objects that uses the same resource manager
 	rManager->SetFloat("rotation", 90);
+	rManager->SetFloat("scale", 1);
 
-	// load FBOs to RM 
-	GLuint fBO1;
-	glGenTextures(1, &fBO1);
-	glBindTexture(GL_TEXTURE_2D, fBO1);
+	// load FBO Textures to RM 
+	GLuint FBOTex1;
+	glGenTextures(1, &FBOTex1);
+	glBindTexture(GL_TEXTURE_2D, FBOTex1);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 2048, 2048, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	rManager->SetTexture("fBO1", fBO1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,width,height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	rManager->SetTexture("FBOTex1", FBOTex1);
+
+	GLuint bufferDepthTex;
+	glGenTextures(1, &bufferDepthTex);
+	glBindTexture(GL_TEXTURE_2D, bufferDepthTex);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+
+	rManager->SetTexture("bufferDepthTex", bufferDepthTex);
+
+	// load FBOs
+	GLuint bufferFBO;
+	glGenFramebuffers(1, &bufferFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rManager->GetTexture("bufferDepthTex"), 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, rManager->GetTexture("bufferDepthTex"), 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rManager->GetTexture("FBOTex1"), 0);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE || !rManager->GetTexture("FBOTex1") || !rManager->GetTexture("bufferDepthTex")) {
+		std::cout << glCheckFramebufferStatus(GL_FRAMEBUFFER) << glGetError() << std::endl;
+		return false;
+	}
+	rManager->SetFBO("bufferFBO", bufferFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Construct Initial Scene Graph
 	// Add cube map
@@ -183,16 +238,17 @@ bool Scene1::Load() {
 	skyboxQuad->SetTexture("cubeMap2");
 	skyboxQuad->SetShader("skybox");
 	root->AddChild(skyboxQuad);
+
 	// Add Mini map
 	SceneNode* miniMap = new SceneNode("miniMap", Mesh::GenerateQuad());
-	float scale = 0.125;
-	miniMap->SetModelScale(Vector3(scale, scale, scale * (float)GetSystemMetrics(SM_CXSCREEN) / (float)GetSystemMetrics(SM_CYSCREEN)));
+	float scale = 0.25;
+	miniMap->SetModelScale(Vector3(scale, 1, scale * (float)width / (float)height));
 	float posX = (2.0f - (scale * 2.0f)) / 2.0f;
-	float posY = (2.0f - (scale * (float)GetSystemMetrics(SM_CXSCREEN) / (float)GetSystemMetrics(SM_CYSCREEN) * 2.0f)) / 2.0f;
+	float posY = (2.0f - ((scale * (float)width / (float)height) * 2.0f)) / 2.0f;
 	miniMap->SetLocalTransform(Matrix4::Translation(Vector3(posX, posY , -1)) * Matrix4::Rotation(90, Vector3(1, 0, 0)));
 	miniMap->SetBoundingRadius(INFINITY);
-	miniMap->SetTexture("cubeMap2");
-	miniMap->SetShader("skybox");
+	miniMap->SetTexture("FBOTex1");
+	miniMap->SetShader("tex");
 	root->AddChild(miniMap);
 
 	//Add Island
@@ -204,8 +260,13 @@ bool Scene1::Load() {
 
 	//Add Camera
 	root->AddChild(new Camera("mainCamera", -45.0f, 0.0f, 0.0f, 45.0f, Vector3(0.0f, 128.0f, 0.0f)));
+	root->FindChild("mainCamera")->SetLocalTransform(Matrix4::Translation(Vector3(0, 128, 0)));
+
 	mainCamera = dynamic_cast<Camera*>(root->FindChild("mainCamera"));
 	mainCamera->AddChild(new Light("camLight", 2, Vector3(0, 0, 0.0f), Vector3(0, 0, 0), Vector4(1, 1, 1, 1000), 100));
+	
+	root->AddChild(new Camera("miniMapCamera",-90.0f, 0.0f, 0.0f, 45.0f, Vector3(0.0f, 1000.0f, 0.0f)));
+	root->FindChild("miniMapCamera")->SetLocalTransform(Matrix4::Translation(Vector3(0,1000, 0)));
 
 	//Add Water plane
 	Mesh* water = Mesh::GenerateQuad();
@@ -220,12 +281,12 @@ bool Scene1::Load() {
 	//Add Light
 	root->AddChild(new SceneNode("lightGimbal"));
 	root->FindChild("lightGimbal")->AddChild(new Light("directionalLight", DIRECTIONAL_LIGHT, Vector3(0, 0, 0), Vector3(0, -1, 0), Vector4(1, 0.6, 0.3,1000), heightmapSize.x));
-	root->FindChild("lightGimbal")->FindChild("directionalLight")->SetLocalTransform(Matrix4::Translation(Vector3(0.f, 1000.0f, 0.0f)));
+	root->FindChild("lightGimbal")->FindChild("directionalLight")->SetLocalTransform(Matrix4::Translation(Vector3(0.f, 2000.0f, 0.0f)));
 	
 	for (int i = 0; i < 1; i++)
 	{
 		std::string name = "pointLight" + std::to_string(i);
-		root->AddChild(new Light(name, 0, Vector3(0, 0, 0.0f), Vector3(0, 1, 0), Vector4(1, 0.01 * (rand() % 100), 0.3, 1000), 100));
+		root->AddChild(new Light(name, 3, Vector3(0, 0, 0.0f), Vector3(0, 1, 0), Vector4(1, 0.01 * (rand() % 100), 0.3, 1000), 100));
 		root->FindChild(name)->SetLocalTransform(Matrix4::Translation(Vector3(((rand() % 100)+20) * i, 100.0f, ((rand() % 100) + 20) * i)));
 	}
 	
@@ -248,5 +309,14 @@ void Scene1::SetTextureRepeating(GLuint target, bool repeating) {
 	glBindTexture(GL_TEXTURE_2D, target);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeating ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Scene1::SetTextureFilter(GLuint target) {
+	glBindTexture(GL_TEXTURE_2D, target);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }

@@ -1,11 +1,12 @@
 #include "hkjjgl/SceneManager.h"
 #include "Scene1.h"
-#include <iostream>
+#include  <iostream>
+#include  <algorithm>
 
 bool createScenes(SceneManager& sceneManager);
 
 int main() {
-	SceneManager sceneManager("Course Work", 1920,1080 ,true);
+	SceneManager sceneManager("Course Work", std::min(GetSystemMetrics(SM_CXSCREEN),1920), std::min(GetSystemMetrics(SM_CYSCREEN),1080),false);
 	if (!createScenes(sceneManager)) {
 		return -1;
 	}

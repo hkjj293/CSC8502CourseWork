@@ -22,7 +22,7 @@ void main(void)	{
 
 	OUT.texCoord = (textureMatrix * vec4(texCoord , 0.0,  1.0)). xy;
 
-	OUT.normal = normalize(normalMatrix * normalize(normal ));
+	OUT.normal = normalize(normalMatrix * normalize(normal));
 
 	vec4 worldPos = (modelMatrix * vec4(position.x , position.y ,position.z ,1));
 

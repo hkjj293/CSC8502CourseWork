@@ -25,7 +25,7 @@ public:
 
 	virtual void Update(float dt) override {
 		SceneNode::Update(dt);
-		position = Vector3(worldTransform.values[12], worldTransform.values[13], worldTransform.values[14]);
+		position = worldTransform.GetPositionVector();
 	}
 
 	Vector3 GetPosition()  const { return  position; }

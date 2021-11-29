@@ -29,6 +29,8 @@ public:
 
 	Matrix4 BuildViewMatrix();
 	Matrix4 BuildTransformMatrix();
+	Matrix4 BuildTranslationMatrix();
+	Matrix4 BuildRotationMatrix();
 	Matrix4 BuildProjMatrix(float width, float height);
 
 	float fov;

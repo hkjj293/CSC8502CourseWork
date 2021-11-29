@@ -21,7 +21,7 @@ in  Vertex {
 out  vec4  fragColour;
 
 void  main(void)    {
-		vec4  diffuse = (texture(diffuseTex , IN.texCoord) + texture(diffuseTex , (-textureMatrix * vec4(IN.texCoord,0,1)).xy) + texture(diffuseTex , (transpose(textureMatrix) * vec4(IN.texCoord,0,1)).xy))/3;
+		vec4  diffuse = (texture(diffuseTex , IN.texCoord * 100) + texture(diffuseTex , (-textureMatrix * vec4(IN.texCoord * 100,0,1)).xy) + texture(diffuseTex , (transpose(textureMatrix) * vec4(IN.texCoord * 100,0,1)).xy))/3;
 		vec3  viewDir = normalize(cameraPos  - IN.worldPos);
 
 		vec3  reflectDir = reflect(-viewDir ,normalize(IN.normal -  diffuse.rgb * 0.04f));

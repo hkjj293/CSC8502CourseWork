@@ -30,6 +30,7 @@ void SceneNode::AddChild(SceneNode* s) {
 }
 
 void SceneNode::RemoveChild(std::string name) {
+	delete children[name];
 	children.erase(name);
 }
 

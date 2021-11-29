@@ -58,11 +58,11 @@ protected:
 	std::vector <float> lightRadius;
 	std::vector <int> lightType;
 
-	void BuildNodeLists(Scene* scene);
+	void BuildNodeLists(Scene* scene, std::string cam);
 	void SortNodeLists();
 	void ClearNodeLists();
-	void DrawNodes(Scene* scene);
-	void DrawNode(SceneNode* n, Scene* scene);
+	void DrawNodes(Scene* scene, std::string cam);
+	void DrawNode(SceneNode* n, Scene* scene, std::string cam);
 	/**********************/
 	virtual void Resize(int x, int y);
 

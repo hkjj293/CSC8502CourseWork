@@ -13,5 +13,9 @@ public:
 
 protected:
 	Camera* mainCamera;
+
+	int lightCount;
+
 	void SetTextureRepeating(GLuint target, bool repeating);
+	void SetTextureFilter(GLuint target);
 };

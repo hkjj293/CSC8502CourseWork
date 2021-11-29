@@ -48,7 +48,7 @@ void SceneManager::DeleteScene(std::string sceneName) {
 int SceneManager::Start(std::string sceneName) {
 	if (!hasScene(sceneName)) return -1;
 	if (!scenes[sceneName]->Load()) return -2;
-	while (w->UpdateWindow() && !scenes[sceneName]->IsEnd() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
+	while (w->UpdateWindow() && !scenes[sceneName]->IsEnd()) {
 		t->Tick();
 		float diff = t->GetTimeDeltaSeconds();
 		//std::cout << 1.0f / diff << " fps" << std::endl;

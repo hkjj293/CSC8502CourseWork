@@ -121,33 +121,40 @@ Renderer::~Renderer() {
 
 void Renderer::Render(Scene* scene) {
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	
 	// Repackage of render sequence
 	// Get root & resource mangager
 	SceneNode* root = scene->GetRoot();
 	ResourceManager* rm = scene->GetResourceManager();
-
+	//t->Tick();
+	glBindFramebuffer(GL_FRAMEBUFFER, rm->GetFBO("bufferFBO"));
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	//Rearrange scene nodes (group and sort)
-	BuildNodeLists(scene);
+	BuildNodeLists(scene, "miniMapCamera");
 	SortNodeLists();
-
+	////Draw Nodes
+	DrawNodes(scene, "miniMapCamera");
+	ClearNodeLists();
+	glBindFramebuffer(GL_FRAMEBUFFER,0);
+	//Post process?
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	BuildNodeLists(scene, "mainCamera");
+	SortNodeLists();
+	
 	//Draw Nodes
-	DrawNodes(scene);
+	DrawNodes(scene, "mainCamera");
 	ClearNodeLists();
 
-	//Post process?
-
-
 	// Count frame rate
-	t->Tick();
-	float diff = t->GetTimeDeltaSeconds();
-	std::cout << 1.0f / diff << " fps" << std::endl;
 
 	//swap buffer!
 	SwapBuffers();
+	t->Tick();
+	float diff = t->GetTimeDeltaSeconds();
+	std::cout << 1.0f / diff << " fps .." << std::endl;
 }
 
 void Renderer::SwapBuffers() {
@@ -156,12 +163,11 @@ void Renderer::SwapBuffers() {
 #endif // _WIN32
 }
 
-void Renderer::BuildNodeLists(Scene* scene) {
+void Renderer::BuildNodeLists(Scene* scene, std::string cam) {
 	std::vector<std::map<std::string,SceneNode*>::iterator> posList;
 	SceneNode* currNode = scene->GetRoot();
 	posList.push_back(currNode->GetFirstChild());
-
-	Camera* camera = dynamic_cast<Camera*>(scene->GetRoot()->FindChild("mainCamera"));
+	Camera* camera = dynamic_cast<Camera*>(scene->GetRoot()->FindChild(cam));
 
 	Frustum frameFrustum;
 	frameFrustum.FromMatrix(camera->BuildProjMatrix((float)width,(float)height) * camera->BuildViewMatrix());
@@ -174,7 +180,7 @@ void Renderer::BuildNodeLists(Scene* scene) {
 		}
 		else if (lightList.size() < 128 && light) {
 		//std::cout << light->GetName() << std::endl;
-			lightList.push_back(light);
+				lightList.push_back(light);			
 		} 
 		else if (posList[posList.size() - 1] == currNode->GetFirstChild() && frameFrustum.InsideFrustum(*currNode)) {
 			Vector3 dir = currNode->GetWorldTransform().GetPositionVector() - camera->position;
@@ -208,7 +214,7 @@ void Renderer::BuildNodeLists(Scene* scene) {
 		}
 	}
 	if (lightList.size() > 0) {
-		std::cout << lightList.size() << std::endl;
+		//std::cout << lightList.size() << std::endl;
 		for (int i = 0; i < lightList.size(); i++) {
 			lightPos.push_back(lightList[i]->GetPosition());
 			lightColour.push_back(lightList[i]->GetColour());
@@ -229,37 +235,39 @@ void Renderer::SortNodeLists() {
 	}*/
 }
 
-void Renderer::DrawNodes(Scene* scene) {
+void Renderer::DrawNodes(Scene* scene, std::string cam) {
+
 	for (const auto& i : nodeList) {
-		DrawNode(i, scene);
+		DrawNode(i, scene, cam);
 	}
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	for (const auto& i : transparentNodeList) {
-		DrawNode(i, scene);
+		DrawNode(i, scene, cam);
 	}
 	glDisable(GL_BLEND);
-	for (const auto& i : postNodeList) {
-		DrawNode(i, scene);
-	}
 
+	
+	for (const auto& i : postNodeList) {
+		DrawNode(i, scene, cam);
+	}
 }
 
-void Renderer::DrawNode(SceneNode* n,Scene* scene) {
-	//std::cout<< n->GetName() <<std::endl;
+void Renderer::DrawNode(SceneNode* n,Scene* scene, std::string cam) {
+	std::cout<< cam  << " " << n->GetName() << std::endl;
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
+	//glDisable(GL_DEPTH_TEST);
 	if (n->GetMesh()) {
 		GLuint currShader = scene->GetResourceManager()->GetShader(n->GetShader())->GetProgram();
 		glUseProgram(currShader);
-		Camera* camera = dynamic_cast<Camera*>(scene->GetRoot()->FindChild("mainCamera"));
+		Camera* camera = dynamic_cast<Camera*>(scene->GetRoot()->FindChild(cam));
 		Light* light = dynamic_cast<Light*>(scene->GetRoot()->FindChild("lightGimbal")->FindChild("directionalLight"));
 
 		Matrix4 viewMatrix = Matrix4();
 		Matrix4 modelMatrix = Matrix4();
 		Matrix4 projMatrix = Matrix4();
-
 		modelMatrix = n->GetWorldTransform() * Matrix4::Scale(n->GetModelScale());
 		projMatrix = camera->BuildProjMatrix((float)width, (float)height);
 		viewMatrix = camera->BuildViewMatrix();
@@ -294,16 +302,22 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 			Matrix4 rotation = Matrix4::Rotation(scene->GetResourceManager()->GetFloat("rotation"), Vector3(0, 0 ,1));
 			glUniformMatrix4fv(glGetUniformLocation(currShader, "rotation"), 1, false, rotation.values);
 			glDisable(GL_DEPTH_TEST);
+			//glDepthMask(GL_FALSE);
 		}
 		else if (n->GetName() == "miniMap") {
-			glUniform1i(glGetUniformLocation(currShader, "cubeTex"), 0);
-			glUniform1i(glGetUniformLocation(currShader, "cubeTex2"), 0);
+			if (cam == "miniMapCamera") return;
+			std::cout << n->GetName() << std::endl;
+			Matrix4 texMatrix = Matrix4();
+			viewMatrix.ToIdentity();
+			projMatrix.ToIdentity();
+			glUniformMatrix4fv(glGetUniformLocation(currShader, "viewMatrix"), 1, false, viewMatrix.values);
+			glUniformMatrix4fv(glGetUniformLocation(currShader, "projMatrix"), 1, false, projMatrix.values);
+			glUniformMatrix4fv(glGetUniformLocation(currShader, "textureMatrix"), 1, false, texMatrix.values);
+			glUniform1i(glGetUniformLocation(currShader, "diffuseTex"), 0);
+			glUniform1i(glGetUniformLocation(currShader, "isFinal"), 1);
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->GetResourceManager()->GetTexture(n->GetTexture()));
-
-			glUniform1f(glGetUniformLocation(currShader, "rot"), 0);
-			Matrix4 rotation = Matrix4();
-			glUniformMatrix4fv(glGetUniformLocation(currShader, "rotation"), 1, false, rotation.values);
+			glBindTexture(GL_TEXTURE_2D, scene->GetResourceManager()->GetTexture(n->GetTexture()));
+			glDisable(GL_DEPTH_TEST);
 		}
 		else if(n->GetName() == "cheungChau") {
 			glEnable(GL_CULL_FACE);
@@ -330,14 +344,14 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D, scene->GetResourceManager()->GetTexture("grassBump"));
 		}
-		else {			
+		else {		
 			glUniform1f(glGetUniformLocation(currShader, "rot"), scene->GetResourceManager()->GetFloat("rotation"));
 
 			Matrix4 rotation = Matrix4::Rotation(scene->GetResourceManager()->GetFloat("rotation"), Vector3(0, 0, 1));
 			glUniformMatrix4fv(glGetUniformLocation(currShader, "textureMatrix"), 1, false, rotation.values);
 
 			glUniform1f(glGetUniformLocation(currShader, "ratio"), 0.3);
-
+			glUniform1f(glGetUniformLocation(currShader, "scale"), 1);
 			glUniform1i(glGetUniformLocation(currShader, "cubeTex2"), 0);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, scene->GetResourceManager()->GetTexture("cubeMap"));
@@ -349,7 +363,6 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene) {
 			glUniform1i(glGetUniformLocation(currShader, "diffuseTex"), 1);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, scene->GetResourceManager()->GetTexture(n->GetTexture()));
-			
 		}
 		n->Draw();
 	}
