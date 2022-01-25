@@ -345,6 +345,7 @@ void Renderer::DrawNode(SceneNode* n,Scene* scene, std::string cam) {
 			glBindTexture(GL_TEXTURE_2D, scene->GetResourceManager()->GetTexture("grassBump"));
 		}
 		else {		
+			glUniform1i(glGetUniformLocation(currShader, "level"), GL_MAX_TESS_GEN_LEVEL);
 			glUniform1f(glGetUniformLocation(currShader, "rot"), scene->GetResourceManager()->GetFloat("rotation"));
 
 			Matrix4 rotation = Matrix4::Rotation(scene->GetResourceManager()->GetFloat("rotation"), Vector3(0, 0, 1));

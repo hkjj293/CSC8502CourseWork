@@ -45,7 +45,7 @@ void Mesh::Draw()	{
 			GLint MaxPatchVertices = 0;
 			glGetIntegerv(GL_MAX_PATCH_VERTICES, &MaxPatchVertices);
 			std::cout << "Max supported patch vertices " << MaxPatchVertices << std::endl;
-			glPatchParameteri(GL_PATCH_VERTICES, MaxPatchVertices);
+			glPatchParameteri(GL_PATCH_VERTICES, 4);
 		}
 		glDrawElements(type, numIndices, GL_UNSIGNED_INT, 0);
 	}
@@ -53,8 +53,8 @@ void Mesh::Draw()	{
 		if (type == GL_PATCHES) {
 			GLint MaxPatchVertices = 0;
 			glGetIntegerv(GL_MAX_PATCH_VERTICES, &MaxPatchVertices);
-			std::cout << "Max supported patch vertices " << MaxPatchVertices << std::endl;
-			glPatchParameteri(GL_PATCH_VERTICES, MaxPatchVertices);
+			//std::cout << "Max supported patch vertices " << MaxPatchVertices << std::endl;
+			glPatchParameteri(GL_PATCH_VERTICES, 4 );
 		}
 		glDrawArrays(type, 0, numVertices);
 		//glDrawArrays(type, 1, numVertices);

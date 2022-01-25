@@ -18,8 +18,9 @@ void  main(void)    {
 	float l = (length(tex2)/length(vec4(1,1,1,1))) > 0.634 ? 1 : 0;
 
 	fragColour = (tex*tex)*(1-negY)*(1-negY2)*l  + 
-			(((negY)*(1-negY2)*(vec4(negY,negY,negY,1.0f)* vec4(0.3,0.4,0.5,1) ) + negY2 *(vec4(negY2,negY2,negY2,1.0f) * vec4(0.6,0.4,0.3,1))))* tex2 +
+			3 * (((negY)*(1-negY2)*(vec4(negY,negY,negY,1.0f)* vec4(0.3,0.4,0.5,1) ) +
+			negY2 *(vec4(negY2,negY2,negY2,1.0f) * vec4(0.6,0.4,0.3,1))))* tex2 +
 	 		(1 - abs(normalize(IN.viewDir).y)) * vec4(0.1,0.1,0.1,1) * vec4(tex2.xyz,1) * vec4(tex2.xyz,1);
 
-	//fragColour = vec4(l,l,l,1);
+	//fragColour *= 5;
 }

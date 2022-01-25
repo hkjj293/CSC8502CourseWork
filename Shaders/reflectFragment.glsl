@@ -21,10 +21,10 @@ in  Vertex {
 out  vec4  fragColour;
 
 void  main(void)    {
-		vec4  diffuse = (texture(diffuseTex , IN.texCoord * 100) + texture(diffuseTex , (-textureMatrix * vec4(IN.texCoord * 100,0,1)).xy) + texture(diffuseTex , (transpose(textureMatrix) * vec4(IN.texCoord * 100,0,1)).xy))/3;
+		vec4  diffuse = texture(diffuseTex , IN.texCoord);
 		vec3  viewDir = normalize(cameraPos  - IN.worldPos);
 
-		vec3  reflectDir = reflect(-viewDir ,normalize(IN.normal -  diffuse.rgb * 0.04f));
+		vec3  reflectDir = reflect(-viewDir ,normalize(IN.normal));
 		float negY = clamp(sin(radians(rot)) + 0.6,0,1);
 		float negY2 = clamp(sin(radians(rot*2 + 90)),0,1);
 
@@ -42,10 +42,10 @@ void  main(void)    {
 		fragColour = (col + (1 - abs(normalize(viewDir).y)) * vec4(0.05,0.05,0.05,1)) * (1.0f - ratio + ratio) * clamp((1 - ((viewDir.y + 1)/2)+ 0.5),0.0,1.0);
 		vec4 temp = vec4(0,0,0,0);
 		for(int i = 0 ; i < lightnum ; i++){
-			temp += (diffuse * ratio) * ambient * (dot(diffuse.rgb,normalize(lightPos[i]))+1) ;
+			temp += diffuse * ambient * clamp(dot(IN.normal,normalize(lightPos[i]-IN.worldPos)),0,1) ;
 		}
-		temp = temp / lightnum;
+		//temp = temp;// / lightnum;
 		fragColour += temp;
-		fragColour = fragColour  *1.5;
-		fragColour.a = 1 - (abs(dot(viewDir,vec3(0,1,0))-0.5)/2);
+		//fragColour = vec4(IN.normal,1);//fragColour  *1.5;
+		fragColour.a = 1;//; - ((dot(viewDir,vec3(0,1,0))+1));
 }

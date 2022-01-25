@@ -26,9 +26,9 @@ void Scene1::Update() {
 	//std::cout << 1.0f / diff << " fps" << std::endl;
 	if (!root->FindChild("mainCamera")) mainCamera == nullptr;
 	if(mainCamera) mainCamera->Update(diff);
-	rManager->SetFloat("rotation", rManager->GetFloat("rotation") + (20 * diff));
+	rManager->SetFloat("rotation", rManager->GetFloat("rotation") + ( diff));
 	if (rManager->GetFloat("rotation") > 360.0f) {
-		rManager->SetFloat("rotation", rManager->GetFloat("rotation") - 360);
+		rManager->SetFloat("rotation", 0);
 	}
 	root->FindChild("lightGimbal")->SetLocalTransform(Matrix4::Rotation(-rManager->GetFloat("rotation") , Vector3(0, 0, 1)));
 	dynamic_cast<Light*>(root->FindChild("lightGimbal")->FindChild("directionalLight"))->SetDirection(Matrix4::Rotation(-rManager->GetFloat("rotation"), Vector3(0, 0, 1))* Vector3(1, 0, 0));
@@ -176,7 +176,7 @@ bool Scene1::Load() {
 	Shader* bump = new Shader("bumpvertex.glsl", "bumpfragment.glsl");
 	Shader* skybox = new Shader("skyboxVertex.glsl", "skyboxFragment.glsl");
 	Shader* reflect = new Shader("reflectVertex.glsl", "reflectFragment.glsl");
-	Shader* tess = new Shader("tessVert.glsl", "displaceFrag.glsl", "", "displaceTCS.glsl", "displaceTES.glsl");
+	Shader* tess = new Shader("tessVert.glsl", "reflectFragment.glsl", "", "displaceTCS.glsl", "displaceTES.glsl");
 	Shader* processShader = new  Shader("textureShader.glsl", "processfrag.glsl");
 	Shader* tex = new Shader("textureShader.glsl", "texturedFragment.glsl");
 	if (!skybox->LoadSuccess() || !bump->LoadSuccess() || !reflect->LoadSuccess() || !tess->LoadSuccess() || !processShader->LoadSuccess()) {
@@ -270,12 +270,14 @@ bool Scene1::Load() {
 
 	//Add Water plane
 	Mesh* water = Mesh::GenerateQuad();
+	water->SetType(GL_PATCHES);
 	//water->SetType(GL_PATCHES);
 	SceneNode* waterPlane = new SceneNode("waterPlane", water, Vector4(1, 1, 1, 0.3f));
-	waterPlane->SetModelScale(heightMap->GetHeightmapSize());
+	waterPlane->SetModelScale(heightMap->GetHeightmapSize() * 0.25f);
+	//waterPlane->SetLocalTransform(Matrix4::Translation(heightMap->GetHeightmapSize()));
 	waterPlane->SetTexture("waterTex");
-	waterPlane->SetShader("reflect");
-	waterPlane->SetBoundingRadius(sqrt(pow(heightMap->GetHeightmapSize().x , 2) * 2)/2);
+	waterPlane->SetShader("tess");// reflect");
+	waterPlane->SetBoundingRadius(INFINITY);// sqrt(pow(heightMap->GetHeightmapSize().x, 2) * 2) / 2);
 	root->AddChild(waterPlane);
 
 	//Add Light
